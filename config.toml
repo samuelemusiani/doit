@@ -1,3 +1,3 @@
-ListeningAddress = "1.1.1.1"
+ListeningAddress = "0.0.0.0"
 ListeningPort = 8080
 DBPath = "./doit.db"

@@ -5,6 +5,7 @@ import (
 
 	"github.com/samuelemusiani/doit/cmd/config"
 	"github.com/samuelemusiani/doit/cmd/db"
+	"github.com/samuelemusiani/doit/cmd/http_server"
 )
 
 func main() {
@@ -12,7 +13,9 @@ func main() {
 	config.ParseConfig("config.toml")
 
 	db.Init()
-	db.Close()
+	http_server.Init()
+	http_server.ListenAndServe()
 
+	db.Close()
 	slog.Info("Terminating DOIT")
 }
