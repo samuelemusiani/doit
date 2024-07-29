@@ -16,16 +16,12 @@ import (
 
 var router *mux.Router = nil
 
-func rootHandler(res http.ResponseWriter, req *http.Request) {
-	res.Write([]byte("Hello World from http :)"))
-	return
-}
-
 func Init() {
 	slog.Debug("Init http server")
 
 	router = mux.NewRouter()
 	router.HandleFunc("/", rootHandler)
+	router.HandleFunc("/notes", notesHandler)
 	router.Use(logginMiddleware)
 }
 
