@@ -12,6 +12,8 @@ func main() {
 	slog.Info("Starting DOIT")
 	config.ParseConfig("config.toml")
 
+	slog.SetLogLoggerLevel(slog.LevelDebug)
+
 	db.Init()
 	http_server.Init()
 	http_server.ListenAndServe()

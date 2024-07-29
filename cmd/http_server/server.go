@@ -26,6 +26,7 @@ func Init() {
 
 	router = mux.NewRouter()
 	router.HandleFunc("/", rootHandler)
+	router.Use(logginMiddleware)
 }
 
 func ListenAndServe() {
