@@ -47,3 +47,7 @@ func CreateNote(note doit.Note) (*doit.Note, error) {
 func AllNotes() ([]doit.Note, error) {
 	return global_db.allNotes()
 }
+
+func GetNoteById(id int64) (*doit.Note, error) {
+	return global_db.getNoteById(id)
+}

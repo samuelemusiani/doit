@@ -64,3 +64,13 @@ func (r *SQLiteRepository) allNotes() ([]doit.Note, error) {
 
 	return all, nil
 }
+
+func (r *SQLiteRepository) getNoteById(id int64) (*doit.Note, error) {
+	row := r.db.QueryRow("SELECT * FROM notes WHERE id = ?", id)
+
+	var note doit.Note
+	if err := row.Scan(&note.ID, &note.Title, &note.Description); err != nil {
+		return nil, err
+	}
+	return &note, nil
+}

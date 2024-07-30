@@ -22,6 +22,7 @@ func Init() {
 	router = mux.NewRouter()
 	router.HandleFunc("/", rootHandler)
 	router.HandleFunc("/notes", notesHandler)
+	router.HandleFunc("/notes/{id}", singleNoteHandler)
 	router.Use(logginMiddleware)
 }
 
