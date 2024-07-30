@@ -7,8 +7,6 @@ import (
 
 	"github.com/mattn/go-sqlite3"
 	"github.com/samuelemusiani/doit/cmd/doit"
-	// "errors"
-	// "github.com/mattn/go-sqlite3"
 )
 
 var (
