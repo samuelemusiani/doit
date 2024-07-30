@@ -40,10 +40,10 @@ func Close() {
 	}
 }
 
-func Create(note doit.Note) (*doit.Note, error) {
-	return global_db.create(note)
+func CreateNote(note doit.Note) (*doit.Note, error) {
+	return global_db.createNote(note)
 }
 
-func All() ([]doit.Note, error) {
-	return global_db.all()
+func AllNotes() ([]doit.Note, error) {
+	return global_db.allNotes()
 }

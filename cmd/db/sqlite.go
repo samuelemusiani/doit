@@ -30,7 +30,7 @@ func (r *SQLiteRepository) migrate() error {
 	return err
 }
 
-func (r *SQLiteRepository) create(note doit.Note) (*doit.Note, error) {
+func (r *SQLiteRepository) createNote(note doit.Note) (*doit.Note, error) {
 	res, err := r.db.Exec("INSERT INTO notes(title, description) values(?, ?)", note.Title, note.Description)
 
 	if err != nil {
@@ -45,7 +45,7 @@ func (r *SQLiteRepository) create(note doit.Note) (*doit.Note, error) {
 	return &note, nil
 }
 
-func (r *SQLiteRepository) all() ([]doit.Note, error) {
+func (r *SQLiteRepository) allNotes() ([]doit.Note, error) {
 	rows, err := r.db.Query("SELECT * FROM notes")
 	if err != nil {
 		return nil, err

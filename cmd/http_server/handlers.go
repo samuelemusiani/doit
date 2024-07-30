@@ -24,7 +24,7 @@ func notesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notes, err := db.All()
+	notes, err := db.AllNotes()
 	if err != nil {
 		slog.With("err", err).Error("While getting notes from DB")
 		http.Error(w, "Could not get notes", http.StatusInternalServerError)

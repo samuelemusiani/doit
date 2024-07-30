@@ -15,19 +15,21 @@ type Config struct {
 var config Config = Config{
 	ListeningAddress: "0.0.0.0",
 	ListeningPort:    8080,
-	DBPath:           "./db",
+	DBPath:           "./doit.db",
 }
 
 func ParseConfig(path string) {
 	configBuff, err := os.ReadFile(path)
 	if err != nil {
-		slog.Error("Error during config reading. Could not continue: %w", err)
-		os.Exit(1)
+		slog.With("err", err).Error("Error during config reading")
+		slog.With("config", config).Warn("Using default config values")
+		return
 	}
 
 	err = toml.Unmarshal(configBuff, &config)
 	if err != nil {
-		slog.Error("Error during config parsing. Could not continue: %w", err)
+		slog.With("err", err).Error("Error during config parsing")
+		slog.Warn("Stopping now to avoid confusion. Either provide a valid config or nothing at all :)")
 		os.Exit(1)
 	}
 }
