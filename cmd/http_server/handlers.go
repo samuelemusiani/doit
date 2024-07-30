@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/samuelemusiani/doit/cmd/db"
+	"github.com/samuelemusiani/doit/cmd/doit"
 )
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,12 +27,24 @@ func rootAPIHandler(w http.ResponseWriter, r *http.Request) {
 
 func notesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
-		w.Header().Set("Allow", "GET OPTIONS")
+		w.Header().Set("Allow", "GET OPTIONS POST")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte{})
 		return
 	}
 
+	switch r.Method {
+	case http.MethodGet:
+		notesHandlerGET(w, r)
+	case http.MethodPost:
+		notesHandlerPOST(w, r)
+	default:
+	}
+
+	return
+}
+
+func notesHandlerGET(w http.ResponseWriter, r *http.Request) {
 	notes, err := db.AllNotes()
 	if err != nil {
 		slog.With("err", err).Error("While getting notes from DB")
@@ -49,6 +62,43 @@ func notesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(b_notes)
+}
+
+func notesHandlerPOST(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var note doit.Note
+	err := decoder.Decode(&note)
+	if err != nil {
+		slog.With("err", err).Error("Decoding request body")
+		// Should we return another type of error?
+		http.Error(w, "Something went wrong", http.StatusBadRequest)
+		return
+	}
+
+	// Basic check, we could improve it in the future
+	if note.Title == "" {
+		http.Error(w, "Title is empty or not present", http.StatusBadRequest)
+		return
+	}
+
+	slog.With("note", note).Debug("Adding note to db")
+	noteCreated, err := db.CreateNote(note)
+	if err != nil {
+		slog.With("note", note, "err", err).Error("Adding note to db")
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	jnote, err := json.Marshal(noteCreated)
+	if err != nil {
+		slog.With("note", note, "err", err).Error("Could not parse note to json")
+		http.Error(w, "Note was added but we could not send the note back", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jnote)
 	return
 }
 

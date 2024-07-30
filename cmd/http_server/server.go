@@ -22,7 +22,7 @@ func Init() {
 	router = mux.NewRouter()
 	router.HandleFunc("/", rootHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api", rootAPIHandler).Methods("GET", "OPTIONS")
-	router.HandleFunc("/api/notes", notesHandler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/api/notes", notesHandler).Methods("GET", "OPTIONS", "POST")
 	router.HandleFunc("/api/notes/{id}", singleNoteHandler).Methods("GET", "OPTIONS", "DELETE")
 	router.Use(logginMiddleware)
 }

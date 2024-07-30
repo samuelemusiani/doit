@@ -32,7 +32,7 @@ func (r *SQLiteRepository) migrate() error {
 	query := `
   CREATE TABLE IF NOT EXISTS notes(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
     description TEXT NOT NULL
   );
   `
