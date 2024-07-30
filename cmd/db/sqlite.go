@@ -2,10 +2,20 @@ package db
 
 import (
 	"database/sql"
+	"errors"
+	"log/slog"
 
+	"github.com/mattn/go-sqlite3"
 	"github.com/samuelemusiani/doit/cmd/doit"
 	// "errors"
 	// "github.com/mattn/go-sqlite3"
+)
+
+var (
+	ErrDuplicate    = errors.New("record already exists")
+	ErrNotExists    = errors.New("row not exists")
+	ErrUpdateFailed = errors.New("update failed")
+	ErrDeleteFailed = errors.New("delete failed")
 )
 
 type SQLiteRepository struct {
@@ -34,6 +44,12 @@ func (r *SQLiteRepository) createNote(note doit.Note) (*doit.Note, error) {
 	res, err := r.db.Exec("INSERT INTO notes(title, description) values(?, ?)", note.Title, note.Description)
 
 	if err != nil {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+				return nil, ErrDuplicate
+			}
+		}
 		return nil, err
 	}
 
@@ -65,12 +81,36 @@ func (r *SQLiteRepository) allNotes() ([]doit.Note, error) {
 	return all, nil
 }
 
-func (r *SQLiteRepository) getNoteById(id int64) (*doit.Note, error) {
+func (r *SQLiteRepository) getNoteByID(id int64) (*doit.Note, error) {
 	row := r.db.QueryRow("SELECT * FROM notes WHERE id = ?", id)
 
 	var note doit.Note
 	if err := row.Scan(&note.ID, &note.Title, &note.Description); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotExists
+		}
 		return nil, err
 	}
 	return &note, nil
+}
+
+func (r *SQLiteRepository) deleteNoteByID(id int64) error {
+	res, err := r.db.Exec("DELETE FROM notes WHERE id = ?", id)
+	if err != nil {
+		slog.With("err", err, "id", id).Error("Deleting note from DB")
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		slog.With("err", err).Error("Getting rowsAffected by DELETE in db")
+		return err
+	}
+
+	if rowsAffected == 0 {
+		slog.With("id", id).Debug("Deleting note from DB. 0 Rows affected")
+		return ErrDeleteFailed
+	}
+
+	return err
 }

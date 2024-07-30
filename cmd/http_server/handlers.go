@@ -2,6 +2,8 @@ package http_server
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -30,10 +32,6 @@ func notesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !equalMethods(r.Method, http.MethodGet, w) {
-		return
-	}
-
 	notes, err := db.AllNotes()
 	if err != nil {
 		slog.With("err", err).Error("While getting notes from DB")
@@ -56,13 +54,9 @@ func notesHandler(w http.ResponseWriter, r *http.Request) {
 
 func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
-		w.Header().Set("Allow", "GET OPTIONS")
+		w.Header().Set("Allow", "GET OPTIONS DELETE")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte{})
-		return
-	}
-
-	if !equalMethods(r.Method, http.MethodGet, w) {
 		return
 	}
 
@@ -80,7 +74,21 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	note, err := db.GetNoteById(id)
+	switch r.Method {
+	case http.MethodGet:
+		singleNoteHandlerGET(w, r, id)
+	case http.MethodDelete:
+		singleNoteHandlerDELETE(w, r, id)
+	default:
+		// Should never be here
+		fmt.Println("Why here?")
+		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
+	}
+	return
+}
+
+func singleNoteHandlerGET(w http.ResponseWriter, r *http.Request, id int64) {
+	note, err := db.GetNoteByID(id)
 	if err != nil {
 		slog.With("err", err, "id", id).Error("Getting notes")
 		// We could send 404 here
@@ -98,5 +106,19 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jnote)
+}
+
+func singleNoteHandlerDELETE(w http.ResponseWriter, r *http.Request, id int64) {
+	slog.With("id", id).Debug("Deleting note")
+	err := db.DeleteNoteByID(id)
+	if err != nil {
+		if errors.Is(err, db.ErrDeleteFailed) {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		w.Write([]byte("Error deleting note"))
+		return
+	}
 	return
 }

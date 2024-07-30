@@ -48,6 +48,10 @@ func AllNotes() ([]doit.Note, error) {
 	return global_db.allNotes()
 }
 
-func GetNoteById(id int64) (*doit.Note, error) {
-	return global_db.getNoteById(id)
+func GetNoteByID(id int64) (*doit.Note, error) {
+	return global_db.getNoteByID(id)
+}
+
+func DeleteNoteByID(id int64) error {
+	return global_db.deleteNoteByID(id)
 }

@@ -20,10 +20,10 @@ func Init() {
 	slog.Debug("Init http server")
 
 	router = mux.NewRouter()
-	router.HandleFunc("/", rootHandler)
-	router.HandleFunc("/api", rootAPIHandler)
-	router.HandleFunc("/api/notes", notesHandler)
-	router.HandleFunc("/api/notes/{id}", singleNoteHandler)
+	router.HandleFunc("/", rootHandler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/api", rootAPIHandler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/api/notes", notesHandler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/api/notes/{id}", singleNoteHandler).Methods("GET", "OPTIONS", "DELETE")
 	router.Use(logginMiddleware)
 }
 
