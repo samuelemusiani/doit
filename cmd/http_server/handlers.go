@@ -12,13 +12,20 @@ import (
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("This is the root of DOIT"))
+	w.Write([]byte("Not implemented yet"))
+	return
+}
+
+func rootAPIHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Hello there :)"))
 	return
 }
 
 func notesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte{})
 		return
 	}
@@ -49,6 +56,7 @@ func notesHandler(w http.ResponseWriter, r *http.Request) {
 func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte{})
 		return
 	}
