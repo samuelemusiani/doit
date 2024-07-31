@@ -1,0 +1,125 @@
+openapi: 3.0.0
+info:
+  title: DOIT API
+  description: DOIT is a simple todo app
+  version: 0.0.1
+
+paths:
+  /api:
+    get:
+      summary: Test the api without login
+      description: This endpoint is used for testing
+      responses:
+        '200':
+          description: Simple text
+          content:
+            text/plain:
+              example: "Hello there :)"
+            
+  /api/notes:
+    get:
+      summary: Return all the notes in DB
+      description: Return all the notes JSON encoded in the DB.
+      #todo: Change to get only for the logged user
+      responses:
+        '200':
+          description: A JSON array of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    title:
+                      type: string
+                    description:
+                      type: string
+                  
+        '500':
+          description: Internal server error
+    post:
+      summary: Add a note to DB
+      description: Add a note JSON encoded to the DB
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        "201":
+          description: Note created successfully
+          
+        "400":
+          description: Bad request. Note was malformed
+          
+        "500":
+          description: Internal server error
+  
+  /api/notes/{id}:
+    get:
+      summary: Returna note by ID
+      description: Return the note that match the ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+      #todo: Change to get only for the logged user
+      responses:
+        '200':
+          description: A JSON array of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    title:
+                      type: string
+                    description:
+                      type: string
+        
+        '400':
+          description: When ID is not an integer
+        '500':
+          description: Internal server error
+    
+    delete:
+      summary: Delete note by ID
+      description: Permanently remove the note in the DB
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type : integer
+            format: int64
+            minimum: 1
+
+        - name: body
+          in: query
+          content:
+            application/json:
+              example: "{\"title\": \"Go outside\", \"descritpion\": \"I should go outside\"}"
+      responses:
+        '200':
+          description: Note delete successfuly
+        '400':
+          description: When ID is not an integer
+        '500':
+          description: Internal server error
