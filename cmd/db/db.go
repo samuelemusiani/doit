@@ -39,16 +39,17 @@ func CreateNote(note doit.Note) (*doit.Note, error) {
 	return global_db.createNote(note)
 }
 
-func AllNotes() ([]doit.Note, error) {
-	return global_db.allNotes()
+func AllNotes(userID int64) ([]doit.Note, error) {
+	return global_db.allNotes(userID)
 }
 
 func GetNoteByID(id int64) (*doit.Note, error) {
 	return global_db.getNoteByID(id)
 }
 
-func DeleteNoteByID(id int64) error {
-	return global_db.deleteNoteByID(id)
+// Delte note with id noteID only if userID match
+func DeleteNoteByID(noteID int64, userID int64) error {
+	return global_db.deleteNoteByID(noteID, userID)
 }
 
 func CreateUser(user doit.User) (*doit.User, error) {

@@ -7,6 +7,12 @@ type Note struct {
 	UserID      int64
 }
 
+type NoteResponse struct {
+	ID          int64
+	Title       string
+	Description string
+}
+
 type User struct {
 	ID       int64
 	Username string
@@ -34,5 +40,13 @@ func UserToResponse(u *User) *UserResponse {
 		Email:    u.Email,
 		Name:     u.Name,
 		Surname:  u.Surname,
+	}
+}
+
+func NoteToResponse(n *Note) *NoteResponse {
+	return &NoteResponse{
+		ID:          n.ID,
+		Title:       n.Title,
+		Description: n.Description,
 	}
 }

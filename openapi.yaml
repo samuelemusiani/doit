@@ -22,7 +22,6 @@ paths:
       description: Return all the notes JSON encoded in the DB.
       tags:
         - notes
-      #todo: Change to get only for the logged user
       responses:
         '200':
           description: A JSON array of notes
@@ -71,7 +70,6 @@ paths:
       description: Return the note that match the ID.
       tags:
         - notes
-      #todo: Change to get only for the logged user
       responses:
         '200':
           description: A JSON array of notes
@@ -82,6 +80,8 @@ paths:
         
         '400':
           description: When ID is not an integer
+        '404':
+          description: Could not find note in DB for the current user
         '500':
           description: Internal server error
     
@@ -95,6 +95,8 @@ paths:
           description: Note delete successfuly
         '400':
           description: When ID is not an integer
+        '404':
+          description: Could not find note in DB for the current user
         '500':
           description: Internal server error
 

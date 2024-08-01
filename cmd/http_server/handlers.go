@@ -38,19 +38,32 @@ func notesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	c, err := r.Cookie(SESSION_COOCKIE_NAME)
+	if err != nil {
+		slog.With("err", err).Error("At this stage cookie should be present")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+	s, b := getSession(c.Value)
+	if !b || s.isExpired() {
+		slog.With("err", err).Error("At this stage cookie should valid")
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
 	switch r.Method {
 	case http.MethodGet:
-		notesHandlerGET(w, r)
+		notesHandlerGET(w, r, s.userID)
 	case http.MethodPost:
-		notesHandlerPOST(w, r)
+		notesHandlerPOST(w, r, s.userID)
 	default:
 	}
 
 	return
 }
 
-func notesHandlerGET(w http.ResponseWriter, r *http.Request) {
-	notes, err := db.AllNotes()
+func notesHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) {
+	notes, err := db.AllNotes(userID)
 	if err != nil {
 		slog.With("err", err).Error("While getting notes from DB")
 		http.Error(w, "Could not get notes", http.StatusInternalServerError)
@@ -69,7 +82,7 @@ func notesHandlerGET(w http.ResponseWriter, r *http.Request) {
 	w.Write(b_notes)
 }
 
-func notesHandlerPOST(w http.ResponseWriter, r *http.Request) {
+func notesHandlerPOST(w http.ResponseWriter, r *http.Request, userID int64) {
 	decoder := json.NewDecoder(r.Body)
 	var note doit.Note
 	err := decoder.Decode(&note)
@@ -87,6 +100,7 @@ func notesHandlerPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.With("note", note).Debug("Adding note to db")
+	note.UserID = userID
 	noteCreated, err := db.CreateNote(note)
 	if err != nil {
 		slog.With("note", note, "err", err).Error("Adding note to db")
@@ -94,7 +108,7 @@ func notesHandlerPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jnote, err := json.Marshal(noteCreated)
+	jnote, err := json.Marshal(doit.NoteToResponse(noteCreated))
 	if err != nil {
 		slog.With("note", note, "err", err).Error("Could not parse note to json")
 		http.Error(w, "Note was added but we could not send the note back", http.StatusInternalServerError)
@@ -129,11 +143,24 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	c, err := r.Cookie(SESSION_COOCKIE_NAME)
+	if err != nil {
+		slog.With("err", err).Error("At this stage cookie should be present")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+	s, b := getSession(c.Value)
+	if !b || s.isExpired() {
+		slog.With("err", err).Error("At this stage cookie should valid")
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
 	switch r.Method {
 	case http.MethodGet:
-		singleNoteHandlerGET(w, r, id)
+		singleNoteHandlerGET(w, r, id, s.userID)
 	case http.MethodDelete:
-		singleNoteHandlerDELETE(w, r, id)
+		singleNoteHandlerDELETE(w, r, id, s.userID)
 	default:
 		// Should never be here
 		fmt.Println("Why here?")
@@ -142,12 +169,22 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func singleNoteHandlerGET(w http.ResponseWriter, r *http.Request, id int64) {
-	note, err := db.GetNoteByID(id)
+func singleNoteHandlerGET(w http.ResponseWriter, r *http.Request, noteID int64, userId int64) {
+	note, err := db.GetNoteByID(noteID)
 	if err != nil {
-		slog.With("err", err, "id", id).Error("Getting notes")
-		// We could send 404 here
-		http.Error(w, "Could not get note", http.StatusInternalServerError)
+		slog.With("err", err, "id", noteID).Error("Getting notes")
+		if errors.Is(err, db.ErrNotExists) {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		w.Write([]byte("Could not get note"))
+		return
+	}
+
+	if note.UserID != userId {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Could not get note"))
 		return
 	}
 
@@ -163,9 +200,8 @@ func singleNoteHandlerGET(w http.ResponseWriter, r *http.Request, id int64) {
 	w.Write(jnote)
 }
 
-func singleNoteHandlerDELETE(w http.ResponseWriter, r *http.Request, id int64) {
-	slog.With("id", id).Debug("Deleting note")
-	err := db.DeleteNoteByID(id)
+func singleNoteHandlerDELETE(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {
+	err := db.DeleteNoteByID(noteID, userID)
 	if err != nil {
 		if errors.Is(err, db.ErrDeleteFailed) {
 			w.WriteHeader(http.StatusNotFound)

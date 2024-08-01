@@ -95,8 +95,8 @@ func (r *SQLiteRepository) createUser(user doit.User) (*doit.User, error) {
 	return &user, nil
 }
 
-func (r *SQLiteRepository) allNotes() ([]doit.Note, error) {
-	rows, err := r.db.Query("SELECT * FROM notes")
+func (r *SQLiteRepository) allNotes(userId int64) ([]doit.Note, error) {
+	rows, err := r.db.Query("SELECT * FROM notes WHERE userID = ?", userId)
 	if err != nil {
 		return nil, err
 	}
@@ -177,8 +177,9 @@ func (r *SQLiteRepository) getUserByEmail(email string) (*doit.User, error) {
 	return scanUser(row)
 }
 
-func (r *SQLiteRepository) deleteNoteByID(id int64) error {
-	res, err := r.db.Exec("DELETE FROM notes WHERE id = ?", id)
+// Delte note with id noteID only if userID match
+func (r *SQLiteRepository) deleteNoteByID(noteID int64, userID int64) error {
+	res, err := r.db.Exec("DELETE FROM notes WHERE id = ? AND userID = ?", noteID, userID)
 	if err != nil {
 		return err
 	}
