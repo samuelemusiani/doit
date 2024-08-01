@@ -16,7 +16,7 @@ func Init() error {
 
 	config := config.GetConfig()
 
-	rawDB, err := sql.Open("sqlite3", config.DBPath)
+	rawDB, err := sql.Open("sqlite3", config.DBPath+"?_foreign_keys=on")
 	if err != nil {
 		return err
 	}

@@ -27,11 +27,6 @@ func newSQLiteRepository(db *sql.DB) *SQLiteRepository {
 
 func (r *SQLiteRepository) migrate() error {
 	query := `
-  CREATE TABLE IF NOT EXISTS notes(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL
-  );
   CREATE TABLE IF NOT EXISTS users(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TINYTEXT UNIQUE NOT NULL,
@@ -43,13 +38,20 @@ func (r *SQLiteRepository) migrate() error {
     active BOOL NOT NULL,
     password TINYTEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS notes(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    userID INTEGER,
+    FOREIGN KEY(userID) REFERENCES users(id)
+  );
   `
 	_, err := r.db.Exec(query)
 	return err
 }
 
 func (r *SQLiteRepository) createNote(note doit.Note) (*doit.Note, error) {
-	res, err := r.db.Exec("INSERT INTO notes(title, description) values(?, ?)", note.Title, note.Description)
+	res, err := r.db.Exec("INSERT INTO notes(title, description, userID) values(?, ?, ?)", note.Title, note.Description, note.UserID)
 
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -103,7 +105,7 @@ func (r *SQLiteRepository) allNotes() ([]doit.Note, error) {
 	var all []doit.Note
 	for rows.Next() {
 		var note doit.Note
-		if err := rows.Scan(&note.ID, &note.Title, &note.Description); err != nil {
+		if err := rows.Scan(&note.ID, &note.Title, &note.Description, &note.UserID); err != nil {
 			return nil, err
 		}
 
@@ -138,7 +140,7 @@ func (r *SQLiteRepository) getNoteByID(id int64) (*doit.Note, error) {
 	row := r.db.QueryRow("SELECT * FROM notes WHERE id = ?", id)
 
 	var note doit.Note
-	if err := row.Scan(&note.ID, &note.Title, &note.Description); err != nil {
+	if err := row.Scan(&note.ID, &note.Title, &note.Description, &note.UserID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotExists
 		}

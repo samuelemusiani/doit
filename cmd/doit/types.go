@@ -4,6 +4,7 @@ type Note struct {
 	ID          int64
 	Title       string
 	Description string
+	UserID      int64
 }
 
 type User struct {
