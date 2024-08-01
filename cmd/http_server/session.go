@@ -36,6 +36,9 @@ func newSession(s session) string {
 // Return the session and true if is present, false otherwise
 func getSession(token string) (session, bool) {
 	s, present := activeSessions.Load(token)
+	if !present {
+		s = session{}
+	}
 	return s.(session), present
 }
 

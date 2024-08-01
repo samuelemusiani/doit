@@ -16,6 +16,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const SESSION_COOCKIE_NAME = "ST"
+
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Not implemented yet"))
@@ -196,15 +198,33 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginHandlerGET(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "", http.StatusNotImplemented)
+	c, err := r.Cookie(SESSION_COOCKIE_NAME)
+	if err != nil {
+		if errors.Is(err, http.ErrNoCookie) {
+			http.Error(w, "Not authenticated", http.StatusUnauthorized)
+			return
+		}
+		slog.With("err", err).Error("While getting cookies")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+	s, ok := getSession(c.Value)
+	if !ok {
+		http.Error(w, "Not authenticated", http.StatusUnauthorized)
+	}
+
+	user, err := db.GetUserByUsername(s.username)
+	w.Write([]byte(fmt.Sprintf("Logged in as user %s with id %d", user.Username, user.ID)))
+	return
 }
 
 func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
-	c, err := r.Cookie("ST")
+	c, err := r.Cookie(SESSION_COOCKIE_NAME)
 	if !errors.Is(err, http.ErrNoCookie) {
 		if err != nil {
 			slog.With("err", err).Error("While getting cookies")
 		} else {
+			slog.Debug("hey")
 			s, p := getSession(c.Value)
 			if p && !s.isExpired() {
 				deleteSession(c.Value)
@@ -262,13 +282,14 @@ func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
 	expire := time.Now().Add(2 * 24 * time.Hour)
 	sToken := newSession(session{username: user.Username, expire: expire})
 	http.SetCookie(w, &http.Cookie{
-		Name:  "ST",
+		Name:  SESSION_COOCKIE_NAME,
 		Value: sToken,
 		// Domain ??
 		Path:     "/",
 		Expires:  expire,
 		Secure:   true,
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	slog.With("user", u.Username).Info("Logged in")
