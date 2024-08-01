@@ -211,6 +211,7 @@ func loginHandlerGET(w http.ResponseWriter, r *http.Request) {
 	s, ok := getSession(c.Value)
 	if !ok {
 		http.Error(w, "Not authenticated", http.StatusUnauthorized)
+		return
 	}
 
 	user, err := db.GetUserByUsername(s.username)
@@ -298,5 +299,12 @@ func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginHandlerDELETE(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "", http.StatusNotImplemented)
+	c, err := r.Cookie(SESSION_COOCKIE_NAME)
+	if err != nil {
+		w.WriteHeader(http.StatusResetContent)
+		return
+	}
+	deleteSession(c.Value)
+	w.WriteHeader(http.StatusResetContent)
+	return
 }
