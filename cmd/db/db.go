@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"log"
 	"log/slog"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -12,32 +11,28 @@ import (
 
 var global_db *SQLiteRepository = nil
 
-func Init() {
+func Init() error {
 	slog.Debug("Init db connection")
 
 	config := config.GetConfig()
 
 	rawDB, err := sql.Open("sqlite3", config.DBPath)
 	if err != nil {
-		slog.With("path", config.DBPath, "err", err).Error("Opening DB")
-		log.Fatal("Could not continue")
+		return err
 	}
 
 	global_db = newSQLiteRepository(rawDB)
 	err = global_db.migrate()
 	if err != nil {
-		slog.With("err", err).Error("Migrating DB")
-		log.Fatal("Could not continue")
+		return err
 	}
+	return nil
 }
 
-func Close() {
+func Close() error {
 	slog.Debug("Closing DB connection")
-
 	err := global_db.db.Close()
-	if err != nil {
-		slog.With("err", err).Error("Closing db")
-	}
+	return err
 }
 
 func CreateNote(note doit.Note) (*doit.Note, error) {

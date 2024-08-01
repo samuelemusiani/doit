@@ -27,7 +27,7 @@ func Init() {
 	router.Use(logginMiddleware)
 }
 
-func ListenAndServe() {
+func ListenAndServe() error {
 	config := config.GetConfig()
 	addr := config.ListeningAddress + ":" + strconv.Itoa(int(config.ListeningPort))
 
@@ -38,11 +38,13 @@ func ListenAndServe() {
 		ReadTimeout:  15 * time.Second,
 	}
 
+	errc := make(chan error, 1)
+
 	go func() {
 		slog.With("addr", addr).Info("Listening and serving")
 		err := srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.With("err", err).Error("Listening and serving")
+			errc <- err
 		}
 	}()
 
@@ -52,14 +54,22 @@ func ListenAndServe() {
 	signal.Notify(c, os.Interrupt)
 
 	// Block until we receive our signal.
-	<-c
+	select {
+	case <-c:
+		slog.Info("Received SIGINT")
+	case err := <-errc:
+		return err
+	}
 
 	// Create a deadline to wait for.
 	wait := 5 * time.Second
+	slog.With("wait", wait).Debug("Waiting for http server to shutdown")
 	ctx, cancel := context.WithTimeout(context.Background(), wait)
 	defer cancel()
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
 	srv.Shutdown(ctx)
 	slog.Info("Shutting http server")
+
+	return nil
 }
