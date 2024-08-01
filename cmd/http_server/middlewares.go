@@ -1,6 +1,7 @@
 package http_server
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 )
@@ -19,8 +20,21 @@ func authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		http.Error(w, "Not authenticated", http.StatusUnauthorized)
-		return
-		// next.ServeHTTP(w, r)
+		c, err := r.Cookie(SESSION_COOCKIE_NAME)
+		if err != nil {
+			if !errors.Is(err, http.ErrNoCookie) {
+				slog.With("err", err).Error("Getting cookie")
+			}
+			http.Error(w, "Not authenticated", http.StatusUnauthorized)
+			return
+		}
+
+		s, ok := getSession(c.Value)
+		if !ok || s.isExpired() {
+			http.Error(w, "Not authenticated", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }
