@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/samuelemusiani/doit/cmd/db"
@@ -199,6 +200,18 @@ func loginHandlerGET(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie("ST")
+	if !errors.Is(err, http.ErrNoCookie) {
+		if err != nil {
+			slog.With("err", err).Error("While getting cookies")
+		} else {
+			s, p := getSession(c.Value)
+			if p && !s.isExpired() {
+				deleteSession(c.Value)
+			}
+		}
+	}
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		slog.With("err", err).Error("Reading body")
@@ -245,6 +258,18 @@ func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
+
+	expire := time.Now().Add(2 * 24 * time.Hour)
+	sToken := newSession(session{username: user.Username, expire: expire})
+	http.SetCookie(w, &http.Cookie{
+		Name:  "ST",
+		Value: sToken,
+		// Domain ??
+		Path:     "/",
+		Expires:  expire,
+		Secure:   true,
+		HttpOnly: true,
+	})
 
 	slog.With("user", u.Username).Info("Logged in")
 	w.Write([]byte(fmt.Sprintf("Logged in as user %s with id %d", user.Username, user.ID)))
