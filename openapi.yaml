@@ -199,7 +199,7 @@ paths:
             schema:
               type: object
               properties:
-                user:
+                username:
                   type: string
                 password:
                   type: string
@@ -208,6 +208,8 @@ paths:
           description: Successfuly logged in
         '400':
           description: Request malformed
+        '404':
+          description: User does not exists or password is not correct
         '500':
           description: Internal server error
     delete:

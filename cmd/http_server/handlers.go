@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/samuelemusiani/doit/cmd/db"
 	"github.com/samuelemusiani/doit/cmd/doit"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
@@ -171,4 +173,84 @@ func singleNoteHandlerDELETE(w http.ResponseWriter, r *http.Request, id int64) {
 		return
 	}
 	return
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		w.Header().Set("Allow", "GET OPTIONS POST DELETE")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte{})
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		loginHandlerGET(w, r)
+	case http.MethodPost:
+		loginHandlerPOST(w, r)
+	case http.MethodDelete:
+		loginHandlerDELETE(w, r)
+	}
+	return
+}
+
+func loginHandlerGET(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "", http.StatusNotImplemented)
+}
+
+func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		slog.With("err", err).Error("Reading body")
+		http.Error(w, "Reading body", http.StatusInternalServerError)
+		return
+	}
+
+	type UserPasswd struct {
+		Username string
+		Password string
+	}
+
+	var u UserPasswd
+	err = json.Unmarshal(body, &u)
+	if err != nil {
+		slog.With("err", err, "body", body).Error("Unmarshaling body")
+		http.Error(w, "Reading body", http.StatusBadRequest)
+		return
+	}
+
+	if len(u.Username) == 0 || len(u.Password) == 0 {
+		http.Error(w, "Username or password are empty", http.StatusBadRequest)
+		return
+	}
+
+	user, err := db.GetUserByUsername(u.Username)
+	if err != nil {
+		if errors.Is(err, db.ErrNotExists) {
+			http.Error(w, "User does not exists or password is not correct", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "", http.StatusInternalServerError)
+		slog.With("err", err, "username", u.Username).Error("During user lookup on db")
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(u.Password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			http.Error(w, "User does not exists or password is not correct", http.StatusNotFound)
+			return
+		}
+		slog.With("err", err, "user", user).Error("Comparing hash with password hashed")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	slog.With("user", u.Username).Info("Logged in")
+	w.Write([]byte(fmt.Sprintf("Logged in as user %s with id %d", user.Username, user.ID)))
+	return
+}
+
+func loginHandlerDELETE(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "", http.StatusNotImplemented)
 }

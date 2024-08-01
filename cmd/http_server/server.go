@@ -16,6 +16,8 @@ import (
 
 var router *mux.Router = nil
 
+var NO_AUTH_PATHS = [...]string{"/", "/api", "/api/login"}
+
 func Init() {
 	slog.Debug("Init http server")
 
@@ -24,7 +26,9 @@ func Init() {
 	router.HandleFunc("/api", rootAPIHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/notes", notesHandler).Methods("GET", "OPTIONS", "POST")
 	router.HandleFunc("/api/notes/{id}", singleNoteHandler).Methods("GET", "OPTIONS", "DELETE")
+	router.HandleFunc("/api/login", loginHandler).Methods("GET", "OPTIONS", "POST", "DELETE")
 	router.Use(logginMiddleware)
+	router.Use(authMiddleware)
 }
 
 func ListenAndServe() error {
