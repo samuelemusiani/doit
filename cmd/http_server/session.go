@@ -9,8 +9,8 @@ import (
 )
 
 type session struct {
-	username string
-	expire   time.Time
+	userID int64
+	expire time.Time
 }
 
 var activeSessions sync.Map

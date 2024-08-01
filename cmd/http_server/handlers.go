@@ -214,7 +214,7 @@ func loginHandlerGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := db.GetUserByUsername(s.username)
+	user, err := db.GetUserById(s.userID)
 	w.Write([]byte(fmt.Sprintf("Logged in as user %s with id %d", user.Username, user.ID)))
 	return
 }
@@ -281,7 +281,7 @@ func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
 	}
 
 	expire := time.Now().Add(2 * 24 * time.Hour)
-	sToken := newSession(session{username: user.Username, expire: expire})
+	sToken := newSession(session{userID: user.ID, expire: expire})
 	http.SetCookie(w, &http.Cookie{
 		Name:  SESSION_COOCKIE_NAME,
 		Value: sToken,
