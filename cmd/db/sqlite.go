@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"errors"
-	"log/slog"
 
 	"github.com/mattn/go-sqlite3"
 	"github.com/samuelemusiani/doit/cmd/doit"
@@ -33,6 +32,17 @@ func (r *SQLiteRepository) migrate() error {
     title TEXT NOT NULL,
     description TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS users(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TINYTEXT UNIQUE NOT NULL,
+    email TINYTEXT UNIQUE NOT NULL,
+    name TINYTEXT NOT NULL,
+    surname TINYTEXT NOT NULL,
+    admin BOOL NOT NULL,
+    external BOOL NOT NULL,
+    active BOOL NOT NULL,
+    password TINYTEXT NOT NULL
+  );
   `
 	_, err := r.db.Exec(query)
 	return err
@@ -59,6 +69,30 @@ func (r *SQLiteRepository) createNote(note doit.Note) (*doit.Note, error) {
 	return &note, nil
 }
 
+func (r *SQLiteRepository) createUser(user doit.User) (*doit.User, error) {
+	res, err := r.db.Exec("INSERT INTO users(username, email, name, surname, admin, external, active, password) values(?, ?, ?, ?, ?, ?, ?, ?)",
+		user.Username, user.Email, user.Name, user.Surname,
+		user.Admin, user.External, user.Active, user.Password)
+
+	if err != nil {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+				return nil, ErrDuplicate
+			}
+		}
+		return nil, err
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	user.ID = id
+	return &user, nil
+}
+
 func (r *SQLiteRepository) allNotes() ([]doit.Note, error) {
 	rows, err := r.db.Query("SELECT * FROM notes")
 	if err != nil {
@@ -79,6 +113,27 @@ func (r *SQLiteRepository) allNotes() ([]doit.Note, error) {
 	return all, nil
 }
 
+func (r *SQLiteRepository) allUsers() ([]doit.User, error) {
+	rows, err := r.db.Query("SELECT * FROM users")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var all []doit.User
+	for rows.Next() {
+		var user doit.User
+		err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.Name, &user.Surname, &user.Admin, &user.External, &user.Active, &user.Password)
+		if err != nil {
+			return nil, err
+		}
+
+		all = append(all, user)
+	}
+
+	return all, nil
+}
+
 func (r *SQLiteRepository) getNoteByID(id int64) (*doit.Note, error) {
 	row := r.db.QueryRow("SELECT * FROM notes WHERE id = ?", id)
 
@@ -92,23 +147,66 @@ func (r *SQLiteRepository) getNoteByID(id int64) (*doit.Note, error) {
 	return &note, nil
 }
 
+func scanUser(row *sql.Row) (*doit.User, error) {
+	var user doit.User
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Name, &user.Surname, &user.Admin, &user.External, &user.Active, &user.Password)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotExists
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *SQLiteRepository) getUserByID(id int64) (*doit.User, error) {
+	row := r.db.QueryRow("SELECT * FROM users WHERE id = ?", id)
+	return scanUser(row)
+}
+
+func (r *SQLiteRepository) getUserByUsername(username string) (*doit.User, error) {
+	row := r.db.QueryRow("SELECT * FROM users WHERE username = ?", username)
+	return scanUser(row)
+}
+
+func (r *SQLiteRepository) getUserByEmail(email string) (*doit.User, error) {
+	row := r.db.QueryRow("SELECT * FROM users WHERE email = ?", email)
+	return scanUser(row)
+}
+
 func (r *SQLiteRepository) deleteNoteByID(id int64) error {
 	res, err := r.db.Exec("DELETE FROM notes WHERE id = ?", id)
 	if err != nil {
-		slog.With("err", err, "id", id).Error("Deleting note from DB")
 		return err
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		slog.With("err", err).Error("Getting rowsAffected by DELETE in db")
 		return err
 	}
 
 	if rowsAffected == 0 {
-		slog.With("id", id).Debug("Deleting note from DB. 0 Rows affected")
 		return ErrDeleteFailed
 	}
 
-	return err
+	return nil
+}
+
+func (r *SQLiteRepository) deleteUserByID(id int64) error {
+	res, err := r.db.Exec("DELETE FROM users WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrDeleteFailed
+	}
+
+	return nil
 }

@@ -19,14 +19,14 @@ func Init() {
 
 	rawDB, err := sql.Open("sqlite3", config.DBPath)
 	if err != nil {
-		slog.Error("Opening DB at path %s: %w", config.DBPath, err)
+		slog.With("path", config.DBPath, "err", err).Error("Opening DB")
 		log.Fatal("Could not continue")
 	}
 
 	global_db = newSQLiteRepository(rawDB)
 	err = global_db.migrate()
 	if err != nil {
-		slog.Error("Migrating DB: %w", err)
+		slog.With("err", err).Error("Migrating DB")
 		log.Fatal("Could not continue")
 	}
 }
@@ -36,7 +36,7 @@ func Close() {
 
 	err := global_db.db.Close()
 	if err != nil {
-		slog.Error("Closing db: %w", err)
+		slog.With("err", err).Error("Closing db")
 	}
 }
 
@@ -54,4 +54,28 @@ func GetNoteByID(id int64) (*doit.Note, error) {
 
 func DeleteNoteByID(id int64) error {
 	return global_db.deleteNoteByID(id)
+}
+
+func CreateUser(user doit.User) (*doit.User, error) {
+	return global_db.createUser(user)
+}
+
+func AllUsers() ([]doit.User, error) {
+	return global_db.allUsers()
+}
+
+func GetUserById(id int64) (*doit.User, error) {
+	return global_db.getUserByID(id)
+}
+
+func GetUserByUsername(username string) (*doit.User, error) {
+	return global_db.getUserByUsername(username)
+}
+
+func GetUserByEmail(email string) (*doit.User, error) {
+	return global_db.getUserByEmail(email)
+}
+
+func DeleteUserByID(id int64) error {
+	return global_db.deleteUserByID(id)
 }
