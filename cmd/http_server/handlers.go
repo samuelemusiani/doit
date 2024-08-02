@@ -344,3 +344,50 @@ func loginHandlerDELETE(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusResetContent)
 	return
 }
+
+func usersHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	isAdmin, err := isAdminFromRequest(r)
+	if errors.Is(err, ErrInteral) {
+		slog.With("err", err).Error("Checking if user is admin")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	} else if errors.Is(err, ErrUnauthorized) {
+		// This should never happen
+		slog.Error("Passing middleware of authentication, but not authenticated")
+		http.Error(w, "Not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	if !isAdmin {
+		http.Error(w, "Not authenticated", http.StatusForbidden)
+		return
+	}
+
+	users, err := db.AllUsers()
+	if err != nil {
+		slog.With("err", err).Error("Gettin users from DB")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	usersResponse := make([]doit.UserResponse, len(users))
+	for i := range users {
+		usersResponse[i] = *doit.UserToResponse(&users[i])
+	}
+
+	res, err := json.Marshal(usersResponse)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling users for response")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(res)
+	return
+}

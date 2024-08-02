@@ -27,6 +27,8 @@ func Init() {
 	router.HandleFunc("/api/notes", notesHandler).Methods("GET", "OPTIONS", "POST")
 	router.HandleFunc("/api/notes/{id}", singleNoteHandler).Methods("GET", "OPTIONS", "DELETE")
 	router.HandleFunc("/api/login", loginHandler).Methods("GET", "OPTIONS", "POST", "DELETE")
+	router.HandleFunc("/api/users", usersHandler).Methods("GET", "OPTIONS")
+
 	router.Use(logginMiddleware)
 	router.Use(authMiddleware)
 }
