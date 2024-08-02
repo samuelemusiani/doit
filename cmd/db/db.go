@@ -52,6 +52,10 @@ func DeleteNoteByID(noteID int64, userID int64) error {
 	return global_db.deleteNoteByID(noteID, userID)
 }
 
+func UpdateNote(id int64, note doit.Note) (*doit.Note, error) {
+	return global_db.updateNote(id, note)
+}
+
 func CreateUser(user doit.User) (*doit.User, error) {
 	return global_db.createUser(user)
 }
@@ -60,7 +64,7 @@ func AllUsers() ([]doit.User, error) {
 	return global_db.allUsers()
 }
 
-func GetUserById(id int64) (*doit.User, error) {
+func GetUserByID(id int64) (*doit.User, error) {
 	return global_db.getUserByID(id)
 }
 
@@ -74,4 +78,8 @@ func GetUserByEmail(email string) (*doit.User, error) {
 
 func DeleteUserByID(id int64) error {
 	return global_db.deleteUserByID(id)
+}
+
+func UpdateUser(id int64, user doit.User) (*doit.User, error) {
+	return global_db.updateUser(id, user)
 }

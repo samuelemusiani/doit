@@ -249,7 +249,7 @@ func loginHandlerGET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := db.GetUserById(s.userID)
+	user, err := db.GetUserByID(s.userID)
 	w.Write([]byte(fmt.Sprintf("Logged in as user %s with id %d", user.Username, user.ID)))
 	return
 }
@@ -440,7 +440,7 @@ func singleUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) {
-	user, err := db.GetUserById(userID)
+	user, err := db.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotExists) {
 			http.Error(w, "User does not exists", http.StatusNotFound)

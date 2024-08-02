@@ -32,7 +32,7 @@ func isAdminFromRequest(r *http.Request) (bool, error) {
 		return false, ErrUnauthorized
 	}
 
-	user, err := db.GetUserById(s.userID)
+	user, err := db.GetUserByID(s.userID)
 	if err != nil {
 		return false, errors.Join(ErrInteral, err)
 	}

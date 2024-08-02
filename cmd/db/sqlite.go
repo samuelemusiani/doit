@@ -177,7 +177,7 @@ func (r *SQLiteRepository) getUserByEmail(email string) (*doit.User, error) {
 	return scanUser(row)
 }
 
-// Delte note with id noteID only if userID match
+// Delete note with id noteID only if userID match
 func (r *SQLiteRepository) deleteNoteByID(noteID int64, userID int64) error {
 	res, err := r.db.Exec("DELETE FROM notes WHERE id = ? AND userID = ?", noteID, userID)
 	if err != nil {
@@ -212,4 +212,52 @@ func (r *SQLiteRepository) deleteUserByID(id int64) error {
 	}
 
 	return nil
+}
+
+func (r *SQLiteRepository) updateNote(id int64, note doit.Note) (*doit.Note, error) {
+	if id == 0 {
+		return nil, errors.New("invalid updated ID")
+	}
+
+	res, err := r.db.Exec("UPDATE notes SET title = ?, description = ?, userID = ? WHERE id = ?",
+		note.Title, note.Description, note.UserID, note.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
+	if rowsAffected == 0 {
+		return nil, ErrUpdateFailed
+	}
+
+	return &note, nil
+}
+
+func (r *SQLiteRepository) updateUser(id int64, user doit.User) (*doit.User, error) {
+	if id == 0 {
+		return nil, errors.New("invalid updated ID")
+	}
+
+	res, err := r.db.Exec("UPDATE users SET username = ?, email = ?, name = ?, surname = ?, admin = ?, external = ?, active = ?, password = ? WHERE id = ?",
+		user.Username, user.Email, user.Name, user.Surname, user.Admin, user.External, user.Active, user.Password, user.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
+	if rowsAffected == 0 {
+		return nil, ErrUpdateFailed
+	}
+
+	return &user, nil
 }
