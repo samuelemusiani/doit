@@ -377,3 +377,37 @@ func TestDeleteNoteByIDWrongUserID(t *testing.T) {
 	err = cleanup()
 	assert.NilError(t, err)
 }
+
+func TestDeleteNotesByUserID(t *testing.T) {
+	err := setup()
+	assert.NilError(t, err)
+
+	numberOfUsers := 3
+	users := make([]doit.User, numberOfUsers)
+	for i := range numberOfUsers {
+		user, err := createAndInsertUser()
+		assert.NilError(t, err)
+
+		users[i] = *user
+	}
+
+	numberOfNotes := rand.Intn(10) + 10
+	notes := make([]doit.Note, numberOfNotes)
+	for i := range numberOfNotes {
+		note, err := createAndInsertNote(int64(rand.Intn(numberOfUsers) + 1))
+		assert.NilError(t, err)
+
+		notes[i] = *note
+	}
+
+	userID := int64(rand.Intn(numberOfUsers) + 1)
+	err = DeleteNotesByUserID(userID)
+	assert.NilError(t, err)
+
+	dbNotes, err := AllNotes(userID)
+	assert.NilError(t, err)
+	assert.Check(t, len(dbNotes) == 0)
+
+	err = cleanup()
+	assert.NilError(t, err)
+}

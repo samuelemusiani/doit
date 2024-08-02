@@ -52,6 +52,10 @@ func DeleteNoteByID(noteID int64, userID int64) error {
 	return global_db.deleteNoteByID(noteID, userID)
 }
 
+func DeleteNotesByUserID(userID int64) error {
+	return global_db.deleteNotesByUserID(userID)
+}
+
 func UpdateNote(id int64, note doit.Note) (*doit.Note, error) {
 	return global_db.updateNote(id, note)
 }

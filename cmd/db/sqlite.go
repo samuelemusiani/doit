@@ -196,6 +196,24 @@ func (r *SQLiteRepository) deleteNoteByID(noteID int64, userID int64) error {
 	return nil
 }
 
+func (r *SQLiteRepository) deleteNotesByUserID(userID int64) error {
+	res, err := r.db.Exec("DELETE FROM notes WHERE userID = ?", userID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrDeleteFailed
+	}
+
+	return nil
+}
+
 func (r *SQLiteRepository) deleteUserByID(id int64) error {
 	res, err := r.db.Exec("DELETE FROM users WHERE id = ?", id)
 	if err != nil {
