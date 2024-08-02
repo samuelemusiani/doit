@@ -162,8 +162,7 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		singleNoteHandlerDELETE(w, r, id, s.userID)
 	default:
-		// Should never be here
-		fmt.Println("Why here?")
+		slog.With("method", r.Method).Error("Method not valid. How did we get here?")
 		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
 	}
 	return
@@ -215,7 +214,7 @@ func singleNoteHandlerDELETE(w http.ResponseWriter, r *http.Request, noteID int6
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.Header().Set("Allow", "GET OPTIONS POST DELETE")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte{})
@@ -346,7 +345,7 @@ func loginHandlerDELETE(w http.ResponseWriter, r *http.Request) {
 }
 
 func usersHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.Header().Set("Allow", "GET OPTIONS")
 		w.WriteHeader(http.StatusOK)
 		return
@@ -390,4 +389,83 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(res)
 	return
+}
+
+func singleUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Allow", "GET OPTIONS PUT DELETE")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	id_string, ok := mux.Vars(r)["id"]
+	if !ok {
+		slog.With("vars", mux.Vars(r)).Error("Could not get id from router vars in singleNoteHandler")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	id, err := strconv.ParseInt(id_string, 10, 64)
+	if err != nil {
+		slog.With("err", err).Error("Parsing int")
+		http.Error(w, "Id is not valid", http.StatusBadRequest)
+		return
+	}
+
+	c, err := r.Cookie(SESSION_COOCKIE_NAME)
+	if err != nil {
+		slog.With("err", err).Error("At this stage cookie should be present")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+	s, b := getSession(c.Value)
+	if !b || s.isExpired() {
+		slog.With("err", err).Error("At this stage cookie should valid")
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		singleUserHandlerGET(w, r, id)
+	case http.MethodPut:
+		singleUserHandlerPUT(w, r, id)
+	case http.MethodDelete:
+		singleUserHandlerDELETE(w, r, id)
+	default:
+		slog.With("method", r.Method).Error("Method not valid. How did we get here?")
+		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
+	}
+	return
+}
+
+func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) {
+	user, err := db.GetUserById(userID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotExists) {
+			http.Error(w, "User does not exists", http.StatusNotFound)
+			return
+		}
+		slog.With("err", err, "userId", userID).Error("Getting user in db")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	userResponse := doit.UserToResponse(user)
+	res, err := json.Marshal(userResponse)
+	if err != nil {
+		slog.With("err", err, "user", userResponse).Error("Marshaling user to JSON")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(res)
+}
+
+func singleUserHandlerPUT(w http.ResponseWriter, r *http.Request, userID int64) {
+	http.Error(w, "Not yet implemented :)", http.StatusNotImplemented)
+}
+
+func singleUserHandlerDELETE(w http.ResponseWriter, r *http.Request, userID int64) {
+	http.Error(w, "Not yet implemented :)", http.StatusNotImplemented)
 }

@@ -31,6 +31,9 @@ type UserResponse struct {
 	Email    string
 	Name     string
 	Surname  string
+	Admin    bool
+	External bool
+	Active   bool
 }
 
 func UserToResponse(u *User) *UserResponse {
@@ -40,6 +43,9 @@ func UserToResponse(u *User) *UserResponse {
 		Email:    u.Email,
 		Name:     u.Name,
 		Surname:  u.Surname,
+		Admin:    u.Admin,
+		External: u.External,
+		Active:   u.Active,
 	}
 }
 
