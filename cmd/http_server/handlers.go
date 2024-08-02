@@ -315,6 +315,11 @@ func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !user.Active {
+		http.Error(w, "Username and password are correct, but user in not active", http.StatusForbidden)
+		return
+	}
+
 	expire := time.Now().Add(2 * 24 * time.Hour)
 	sToken := newSession(session{userID: user.ID, expire: expire})
 	http.SetCookie(w, &http.Cookie{
