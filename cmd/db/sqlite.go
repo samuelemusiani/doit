@@ -34,7 +34,6 @@ func (r *SQLiteRepository) migrate() error {
     name TINYTEXT NOT NULL,
     surname TINYTEXT NOT NULL,
     admin BOOL NOT NULL,
-    external BOOL NOT NULL,
     active BOOL NOT NULL,
     password TINYTEXT NOT NULL
   );
@@ -72,9 +71,9 @@ func (r *SQLiteRepository) createNote(note doit.Note) (*doit.Note, error) {
 }
 
 func (r *SQLiteRepository) createUser(user doit.User) (*doit.User, error) {
-	res, err := r.db.Exec("INSERT INTO users(username, email, name, surname, admin, external, active, password) values(?, ?, ?, ?, ?, ?, ?, ?)",
+	res, err := r.db.Exec("INSERT INTO users(username, email, name, surname, admin, active, password) values(?, ?, ?, ?, ?, ?, ?)",
 		user.Username, user.Email, user.Name, user.Surname,
-		user.Admin, user.External, user.Active, user.Password)
+		user.Admin, user.Active, user.Password)
 
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -125,7 +124,7 @@ func (r *SQLiteRepository) allUsers() ([]doit.User, error) {
 	var all []doit.User
 	for rows.Next() {
 		var user doit.User
-		err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.Name, &user.Surname, &user.Admin, &user.External, &user.Active, &user.Password)
+		err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.Name, &user.Surname, &user.Admin, &user.Active, &user.Password)
 		if err != nil {
 			return nil, err
 		}
@@ -151,7 +150,7 @@ func (r *SQLiteRepository) getNoteByID(id int64) (*doit.Note, error) {
 
 func scanUser(row *sql.Row) (*doit.User, error) {
 	var user doit.User
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Name, &user.Surname, &user.Admin, &user.External, &user.Active, &user.Password)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Name, &user.Surname, &user.Admin, &user.Active, &user.Password)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotExists
@@ -261,8 +260,8 @@ func (r *SQLiteRepository) updateUser(id int64, user doit.User) (*doit.User, err
 		return nil, errors.New("invalid updated ID")
 	}
 
-	res, err := r.db.Exec("UPDATE users SET username = ?, email = ?, name = ?, surname = ?, admin = ?, external = ?, active = ?, password = ? WHERE id = ?",
-		user.Username, user.Email, user.Name, user.Surname, user.Admin, user.External, user.Active, user.Password, user.ID)
+	res, err := r.db.Exec("UPDATE users SET username = ?, email = ?, name = ?, surname = ?, admin = ?, active = ?, password = ? WHERE id = ?",
+		user.Username, user.Email, user.Name, user.Surname, user.Admin, user.Active, user.Password, user.ID)
 
 	if err != nil {
 		return nil, err

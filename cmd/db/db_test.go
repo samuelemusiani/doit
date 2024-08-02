@@ -64,7 +64,6 @@ func newUser() (doit.User, error) {
 		Name:     randString(10),
 		Surname:  randString(12),
 		Admin:    randBool(),
-		External: randBool(),
 		Active:   randBool(),
 		Password: passwd,
 	}, err

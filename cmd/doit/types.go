@@ -20,7 +20,6 @@ type User struct {
 	Name     string
 	Surname  string
 	Admin    bool
-	External bool
 	Active   bool
 	Password string
 }
@@ -44,7 +43,6 @@ func UserToResponse(u *User) *UserResponse {
 		Name:     u.Name,
 		Surname:  u.Surname,
 		Admin:    u.Admin,
-		External: u.External,
 		Active:   u.Active,
 	}
 }
