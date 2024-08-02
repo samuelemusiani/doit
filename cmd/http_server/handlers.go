@@ -425,13 +425,24 @@ func singleUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, err := db.GetUserByID(s.userID)
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	if !user.Admin && user.ID != id {
+		http.Error(w, "Your not an admin or this is not your account", http.StatusForbidden)
+		return
+	}
+
 	switch r.Method {
 	case http.MethodGet:
-		singleUserHandlerGET(w, r, id)
+		singleUserHandlerGET(w, r, id, user)
 	case http.MethodPut:
-		singleUserHandlerPUT(w, r, id)
+		singleUserHandlerPUT(w, r, id, user)
 	case http.MethodDelete:
-		singleUserHandlerDELETE(w, r, id)
+		singleUserHandlerDELETE(w, r, id, user)
 	default:
 		slog.With("method", r.Method).Error("Method not valid. How did we get here?")
 		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
@@ -439,7 +450,7 @@ func singleUserHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) {
+func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64, user *doit.User) {
 	user, err := db.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotExists) {
@@ -462,10 +473,27 @@ func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) 
 	w.Write(res)
 }
 
-func singleUserHandlerPUT(w http.ResponseWriter, r *http.Request, userID int64) {
+func singleUserHandlerPUT(w http.ResponseWriter, r *http.Request, userID int64, user *doit.User) {
 	http.Error(w, "Not yet implemented :)", http.StatusNotImplemented)
 }
 
-func singleUserHandlerDELETE(w http.ResponseWriter, r *http.Request, userID int64) {
-	http.Error(w, "Not yet implemented :)", http.StatusNotImplemented)
+func singleUserHandlerDELETE(w http.ResponseWriter, r *http.Request, userID int64, user *doit.User) {
+	err := db.DeleteNotesByUserID(userID)
+	if err != nil && !errors.Is(err, db.ErrDeleteFailed) {
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	err = db.DeleteUserByID(userID)
+	if err != nil {
+		if errors.Is(err, db.ErrDeleteFailed) {
+			http.Error(w, "", http.StatusNotFound)
+			return
+		}
+		slog.With("err", err, "userID", userID).Error("Deleting user from DB")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("User deleted successfuly"))
 }
