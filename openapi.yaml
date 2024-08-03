@@ -20,7 +20,8 @@ paths:
     get:
       summary: Return all the notes in DB
       description: Return all the notes JSON encoded in the DB.
-      #todo: Change to get only for the logged user
+      tags:
+        - notes
       responses:
         '200':
           description: A JSON array of notes
@@ -29,31 +30,22 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    title:
-                      type: string
-                    description:
-                      type: string
+                  $ref: '#/components/schemas/Note'
                   
         '500':
           description: Internal server error
     post:
       summary: Add a note to DB
       description: Add a note JSON encoded to the DB
+      tags:
+        - notes
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                description:
-                  type: string
+              $ref: '#/components/schemas/Note'
+
       responses:
         "201":
           description: Note created successfully
@@ -65,61 +57,198 @@ paths:
           description: Internal server error
   
   /api/notes/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type : integer
+          format: int64
+          minimum: 1
     get:
       summary: Returna note by ID
       description: Return the note that match the ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-      #todo: Change to get only for the logged user
+      tags:
+        - notes
       responses:
         '200':
           description: A JSON array of notes
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    title:
-                      type: string
-                    description:
-                      type: string
+                $ref: '#/components/schemas/Note'
         
         '400':
           description: When ID is not an integer
+        '404':
+          description: Could not find note in DB for the current user
         '500':
           description: Internal server error
     
     delete:
       summary: Delete note by ID
       description: Permanently remove the note in the DB
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-
-        - name: body
-          in: query
-          content:
-            application/json:
-              example: "{\"title\": \"Go outside\", \"descritpion\": \"I should go outside\"}"
+      tags:
+        - notes
       responses:
         '200':
           description: Note delete successfuly
         '400':
           description: When ID is not an integer
+        '404':
+          description: Could not find note in DB for the current user
         '500':
           description: Internal server error
+
+  /api/users:
+    get:
+      summary: All the users in the DB
+      description: Get all users in the DB. Only an admin can do this
+      tags:
+        - users
+      responses:
+        '200':
+          description: A JSON array of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Is the user is not authenticated
+        '403':
+          description: Is the user is not ad admin
+        '500':
+          description: Internal server error
+
+
+  /api/users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Get all info for the user. Successful only if the user is logged
+      tags:
+        - users
+      responses:
+        '200':
+          description: User retrived successfully
+        '401':
+          description: Not authenticated, cannot get user
+        '403':
+          description: Authenticated but lacks of permission
+        '500':
+          description: INternal server error
+
+    put:
+      description: Update user info. Admin and user can do this
+      tags:
+        - users
+      responses:
+        '200':
+          description: User updated successfully
+        '400':
+          description: Requeste was malformed
+        '401':
+          description: Not authenticated, cannot update user
+        '403':
+          description: Authenticated but lacks of permission
+        '500':
+          description: Internal server error
+
+    delete:
+      description: Delete an user. Only valid if is local and not external
+      tags:
+        - users
+      responses:
+        '200': 
+          description: User deleted successfuly
+        '401':
+          description: Not authenticated, cannot update user
+        '403':
+          description: Authenticated but lacks of permission
+        '500':
+          description: Internal server error
+                    
+  /api/login:
+    get:
+      description: Test if client is logged
+      tags:
+        - users
+      responses:
+        '200': 
+          description: Current session is logged in. Return is the user object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not logged in
+        '500':
+          description: Internal server error
+    post:
+      description: Login to the service
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successfuly logged in
+        '400':
+          description: Request malformed
+        '404':
+          description: User does not exists or password is not correct
+        '500':
+          description: Internal server error
+    delete:
+      description: Used for logout
+      tags:
+        - users
+      responses:
+        '205':
+          description: Successfuly logged out
+
+components:
+  schemas:
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        admin:
+          type: boolean
+        external:
+          type: boolean
+        active:
+          type: boolean

@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/pelletier/go-toml/v2"
-	"log/slog"
 	"os"
 )
 
@@ -18,20 +17,18 @@ var config Config = Config{
 	DBPath:           "./doit.db",
 }
 
-func ParseConfig(path string) {
+func ParseConfig(path string) error {
 	configBuff, err := os.ReadFile(path)
 	if err != nil {
-		slog.With("err", err).Error("Error during config reading")
-		slog.With("config", config).Warn("Using default config values")
-		return
+		return err
 	}
 
 	err = toml.Unmarshal(configBuff, &config)
 	if err != nil {
-		slog.With("err", err).Error("Error during config parsing")
-		slog.Warn("Stopping now to avoid confusion. Either provide a valid config or nothing at all :)")
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }
 
 func GetConfig() *Config {
