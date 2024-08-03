@@ -26,7 +26,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 func rootAPIHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hello there :)"))
+	w.Write([]byte("Root APIs endpoint for DOIT"))
 	return
 }
 
@@ -41,7 +41,7 @@ func notesHandler(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie(SESSION_COOCKIE_NAME)
 	if err != nil {
 		slog.With("err", err).Error("At this stage cookie should be present")
-		http.Error(w, "", http.StatusInternalServerError)
+		http.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 	s, b := getSession(c.Value)
@@ -260,7 +260,6 @@ func loginHandlerPOST(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			slog.With("err", err).Error("While getting cookies")
 		} else {
-			slog.Debug("hey")
 			s, p := getSession(c.Value)
 			if p && !s.isExpired() {
 				deleteSession(c.Value)
@@ -455,8 +454,8 @@ func singleUserHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64, user *doit.User) {
-	user, err := db.GetUserByID(userID)
+func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64, author *doit.User) {
+	author, err := db.GetUserByID(userID)
 	if err != nil {
 		if errors.Is(err, db.ErrNotExists) {
 			http.Error(w, "User does not exists", http.StatusNotFound)
@@ -467,7 +466,7 @@ func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64, 
 		return
 	}
 
-	userResponse := doit.UserToResponse(user)
+	userResponse := doit.UserToResponse(author)
 	res, err := json.Marshal(userResponse)
 	if err != nil {
 		slog.With("err", err, "user", userResponse).Error("Marshaling user to JSON")
@@ -478,11 +477,95 @@ func singleUserHandlerGET(w http.ResponseWriter, r *http.Request, userID int64, 
 	w.Write(res)
 }
 
-func singleUserHandlerPUT(w http.ResponseWriter, r *http.Request, userID int64, user *doit.User) {
-	http.Error(w, "Not yet implemented :)", http.StatusNotImplemented)
+func singleUserHandlerPUT(w http.ResponseWriter, r *http.Request, userID int64, author *doit.User) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		slog.With("err", err).Error("Reading body")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	originalUser, err := db.GetUserByID(userID)
+	if err != nil {
+		slog.With("err", err, "userId", userID).Error("Getting user from db")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	var updateRequested doit.UserUnmarshaling
+	err = json.Unmarshal(body, &author)
+	if err != nil {
+		slog.With("err", err).Error("Unmarshaling body")
+		http.Error(w, "Could not unmarshal body", http.StatusBadRequest)
+		return
+	}
+
+	if updateRequested.Username != nil {
+		http.Error(w, "Username is not updatable", http.StatusBadRequest)
+		return
+	}
+
+	if updateRequested.Email != nil {
+		originalUser.Email = *updateRequested.Email
+	}
+
+	if updateRequested.Name != nil {
+		originalUser.Name = *updateRequested.Name
+	}
+
+	if updateRequested.Surname != nil {
+		originalUser.Surname = *updateRequested.Surname
+	}
+
+	if updateRequested.Admin != nil {
+		if author.Admin {
+			slog.With("author", *author, "updateUser", updateRequested).Info("Admin modification")
+			originalUser.Admin = *updateRequested.Admin
+		} else {
+			http.Error(w, "Not an admin, cannot become one", http.StatusForbidden)
+			return
+		}
+	}
+
+	if updateRequested.Active != nil {
+		originalUser.Active = *updateRequested.Active
+	}
+
+	if updateRequested.Password != nil {
+		h, err := bcrypt.GenerateFromPassword([]byte(*updateRequested.Password), bcrypt.DefaultCost)
+		if err != nil {
+			if errors.Is(err, bcrypt.ErrPasswordTooLong) {
+				http.Error(w, "Password too long (> 72 bytes)", http.StatusBadRequest)
+			} else {
+				slog.With("err", err).Error("Generating hash from password")
+				http.Error(w, "", http.StatusInternalServerError)
+			}
+			return
+		}
+
+		originalUser.Password = string(h)
+	}
+
+	updatedUser, err := db.UpdateUser(userID, *originalUser)
+	if err != nil {
+		slog.With("err", err).Error("Updating user")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	updateResponse := doit.UserToResponse(updatedUser)
+
+	res, err := json.Marshal(updateResponse)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling update user")
+		w.Write([]byte("User updated, but can't be returned"))
+		return
+	}
+
+	w.Write(res)
 }
 
-func singleUserHandlerDELETE(w http.ResponseWriter, r *http.Request, userID int64, user *doit.User) {
+func singleUserHandlerDELETE(w http.ResponseWriter, r *http.Request, userID int64, author *doit.User) {
 	err := db.DeleteNotesByUserID(userID)
 	if err != nil && !errors.Is(err, db.ErrDeleteFailed) {
 		http.Error(w, "", http.StatusInternalServerError)

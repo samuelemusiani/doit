@@ -24,6 +24,18 @@ type User struct {
 	Password string
 }
 
+// This is used during JSON unmarshaling to check if values are present
+type UserUnmarshaling struct {
+	ID       *int64
+	Username *string
+	Email    *string
+	Name     *string
+	Surname  *string
+	Admin    *bool
+	Active   *bool
+	Password *string
+}
+
 type UserResponse struct {
 	ID       int64
 	Username string
