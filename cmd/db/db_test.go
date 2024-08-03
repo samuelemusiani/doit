@@ -15,7 +15,7 @@ import (
 
 func setup() error {
 	conf := config.GetConfig()
-	conf.DBPath = ":memory:"
+	conf.Databse.Path = ":memory:"
 	return Init()
 }
 
