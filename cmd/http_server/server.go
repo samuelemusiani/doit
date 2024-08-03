@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -36,7 +35,7 @@ func Init() {
 
 func ListenAndServe() error {
 	config := config.GetConfig()
-	addr := config.ListeningAddress + ":" + strconv.Itoa(int(config.ListeningPort))
+	addr := config.Server.Listen
 
 	srv := &http.Server{
 		Handler:      router,

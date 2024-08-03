@@ -1,3 +1,8 @@
-ListeningAddress = "0.0.0.0"
-ListeningPort = 8080
-DBPath = "./doit.db"
+[ server ]
+listen = "0.0.0.0:8080"
+
+[ databse ]
+path = "./doit.db"
+
+[ log ]
+log_level = "debug" # debug, info, warn, error

@@ -20,11 +20,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.SetLogLoggerLevel(slog.LevelDebug)
+	var logLevl slog.Level
+	switch conf.Log.Log_level {
+	case "debug":
+		logLevl = slog.LevelDebug
+	case "info":
+		logLevl = slog.LevelInfo
+	case "warn":
+		logLevl = slog.LevelWarn
+	case "error":
+		logLevl = slog.LevelError
+	default:
+		logLevl = slog.LevelInfo
+	}
+	slog.SetLogLoggerLevel(logLevl)
 
 	err = db.Init()
 	if err != nil {
-		slog.With("path", conf.DBPath, "err", err).Error("Initializing database")
+		slog.With("path", conf.Databse.Path, "err", err).Error("Initializing database")
 		os.Exit(1)
 	}
 

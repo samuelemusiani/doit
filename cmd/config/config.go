@@ -1,20 +1,39 @@
 package config
 
 import (
-	"github.com/pelletier/go-toml/v2"
 	"os"
+
+	"github.com/pelletier/go-toml/v2"
 )
 
+type Sever struct {
+	Listen string
+}
+
+type Databse struct {
+	Path string
+}
+
+type Log struct {
+	Log_level string
+}
+
 type Config struct {
-	ListeningAddress string
-	ListeningPort    uint16
-	DBPath           string
+	Server  Sever
+	Databse Databse
+	Log     Log
 }
 
 var config Config = Config{
-	ListeningAddress: "0.0.0.0",
-	ListeningPort:    8080,
-	DBPath:           "./doit.db",
+	Server: Sever{
+		Listen: "0.0.0.0:8080",
+	},
+	Databse: Databse{
+		Path: "./doit.db",
+	},
+	Log: Log{
+		Log_level: "info",
+	},
 }
 
 func ParseConfig(path string) error {
