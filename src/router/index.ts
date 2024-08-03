@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { LOGIN_URL } from '@/consts'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,9 +27,10 @@ router.beforeEach(async (to) => {
 
   // Probably should use the Pinia authStore
   if (authRequired) {
-    const loginUrl = 'http://localhost:8080/api/login' // This is orrible, PLS CHANGE ME
     try {
-      const response = await fetch(loginUrl)
+      const response = await fetch(LOGIN_URL, {
+        credentials: 'include' // Used to send cookies; DOTO Check if this should be in production
+      })
       if (!response.ok) {
         if (response.status == 401) {
           return '/login'
