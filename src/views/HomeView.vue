@@ -8,7 +8,6 @@ import type { Note } from '@/types.ts'
 const notes = ref<Note[]>([])
 
 onMounted(async () => {
-  console.log('mounted')
   try {
     const response = await fetch(NOTES_URL, {
       credentials: 'include'

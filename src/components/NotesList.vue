@@ -11,20 +11,19 @@ const $props = defineProps({
 </script>
 
 <template>
-  <h1>Notes:</h1>
-  <template v-for="note in $props.notes" :key="note.ID">
-    <div>
-      <h3>
-        {{ note.Title }}
-      </h3>
-      <span>
-        {{ note.ID }}
-      </span>
-      <p>
-        {{ note.Description }}
-      </p>
-    </div>
-  </template>
+  <div class="p-5">
+    <template v-for="note in $props.notes" :key="note.ID">
+      <div class="border-black border m-2 p-5 rounded">
+        <div class="flex justify-between">
+          <h3 class="font-semibold">{{ note.Title }}</h3>
+          <span> ID: {{ note.ID }} </span>
+        </div>
+        <p>
+          {{ note.Description }}
+        </p>
+      </div>
+    </template>
+  </div>
 </template>
 
 <style></style>
