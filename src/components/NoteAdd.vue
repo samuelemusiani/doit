@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import type { Note } from '@/types'
+import type { Todo } from '@/types'
 import { ref } from 'vue'
+import { useDraggable } from '@vueuse/core'
 
 const $emits = defineEmits<{
   (e: 'close'): void
-  (e: 'addNote', note: Note): void
+  (e: 'addNote', note: Todo): void
 }>()
+
+const __top_div = ref<HTMLElement | null>(null)
+const { style } = useDraggable(__top_div, {
+  initialValue: {
+    x: document.documentElement.clientWidth / 4,
+    y: document.documentElement.clientHeight / 4
+  }
+})
 
 const _title = ref<string>('')
 const _description = ref<string>('')
@@ -15,14 +24,14 @@ function close() {
 }
 
 function addNote() {
-  let n: Note = { ID: 0, Title: _title.value, Description: _description.value }
+  let n: Todo = { ID: 0, Title: _title.value, Description: _description.value }
 
   $emits('addNote', n)
 }
 </script>
 
 <template>
-  <div class="w-[20rem] rounded border">
+  <div class="fixed w-[20rem] rounded border bg-white" :style="style" ref="__top_div">
     <header class="flex justify-between bg-gray-200">
       <h1 class="flex-auto p-5 text-center font-bold">Add a Note</h1>
     </header>

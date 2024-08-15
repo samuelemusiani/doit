@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { PropType } from 'vue'
-import type { Note } from '@/types'
+import type { Todo } from '@/types'
 import { NOTES_URL } from '@/consts'
 
 const $props = defineProps({
   notes: {
-    type: Array as PropType<Note[]>,
+    type: Array as PropType<Todo[]>,
     required: true
   }
 })
@@ -20,7 +20,7 @@ function deleteNote(id: number) {
 </script>
 
 <template>
-  <div class="p-5">
+  <div class="">
     <template v-for="note in $props.notes" :key="note.ID">
       <div class="m-2 flex justify-between rounded border border-black p-5">
         <div class="">
@@ -30,7 +30,6 @@ function deleteNote(id: number) {
           </p>
         </div>
         <div class="flex">
-          <div class="grid self-center">ID: {{ note.ID }}</div>
           <button class="rounded bg-red-200 p-2 hover:bg-red-400" @click="deleteNote(note.ID)">
             Delete
           </button>
