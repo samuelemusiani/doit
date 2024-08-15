@@ -15,6 +15,13 @@ func logginMiddleware(next http.Handler) http.Handler {
 
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// I don't like this :(
+		if r.Method == http.MethodOptions {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		if sliceContains(NO_AUTH_PATHS[:], r.URL.Path) {
 			next.ServeHTTP(w, r)
 			return
@@ -25,12 +32,14 @@ func authMiddleware(next http.Handler) http.Handler {
 			if !errors.Is(err, http.ErrNoCookie) {
 				slog.With("err", err).Error("Getting cookie")
 			}
+			slog.With("err", err).Debug("Not authenticated")
 			http.Error(w, "Not authenticated", http.StatusUnauthorized)
 			return
 		}
 
 		s, ok := getSession(c.Value)
 		if !ok || s.isExpired() {
+			slog.With("err", err).Debug("Not authenticated")
 			http.Error(w, "Not authenticated", http.StatusUnauthorized)
 			return
 		}

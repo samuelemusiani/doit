@@ -70,16 +70,21 @@ func notesHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) {
 		return
 	}
 
-	b_notes, err := json.Marshal(notes)
-	if err != nil {
-		slog.With("err", err).Error("While parsing notes for json")
-		http.Error(w, "Could not get notes", http.StatusInternalServerError)
-		return
+	var response []byte
+	if len(notes) == 0 {
+		response = []byte("[]")
+	} else {
+		response, err = json.Marshal(notes)
+		if err != nil {
+			slog.With("err", err).Error("While parsing notes for json")
+			http.Error(w, "Could not get notes", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(b_notes)
+	w.Write(response)
 }
 
 func notesHandlerPOST(w http.ResponseWriter, r *http.Request, userID int64) {
@@ -384,11 +389,16 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		usersResponse[i] = *doit.UserToResponse(&users[i])
 	}
 
-	res, err := json.Marshal(usersResponse)
-	if err != nil {
-		slog.With("err", err).Error("Marshaling users for response")
-		http.Error(w, "", http.StatusInternalServerError)
-		return
+	var res []byte
+	if len(usersResponse) == 0 {
+		res = []byte("[]")
+	} else {
+		res, err = json.Marshal(usersResponse)
+		if err != nil {
+			slog.With("err", err).Error("Marshaling users for response")
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Write(res)

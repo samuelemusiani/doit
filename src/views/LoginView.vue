@@ -49,14 +49,14 @@ async function login() {
   <form @submit.prevent="login()">
     <div>
       <label for="username">Username:</label>
-      <input id="username" type="text" v-model="username" />
+      <input id="username" type="text" v-model="username" class="border border-black" />
     </div>
 
     <div>
       <label for="password">Password:</label>
-      <input id="password" type="password" v-model="password" />
+      <input id="password" type="password" v-model="password" class="border border-black" />
     </div>
-    <button>Login</button>
+    <button class="rounded border p-1 hover:bg-gray-200">Login</button>
     <div>
       {{ errorText }}
     </div>
