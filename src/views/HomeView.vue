@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import NotesList from '@/components/NotesList.vue'
+
 import { onMounted, ref } from 'vue'
 import { NOTES_URL } from '@/consts'
-const notes = ref()
+import type { Note } from '@/types.ts'
+
+const notes = ref<Note[]>([])
 
 onMounted(async () => {
   console.log('mounted')
@@ -12,7 +16,7 @@ onMounted(async () => {
     if (!response.ok) {
       throw new Error('Could not fetch notes')
     }
-    notes.value = await response.json()
+    notes.value = (await response.json()) as Note[]
   } catch (error) {
     console.error(error)
   }
@@ -20,8 +24,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <h1>Notes:</h1>
-  <div>
-    {{ notes }}
-  </div>
+  <NotesList :notes="notes" />
 </template>
+
+<style></style>
