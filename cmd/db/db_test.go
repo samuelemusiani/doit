@@ -52,12 +52,15 @@ func newPassword() (string, error) {
 
 func newNote() doit.Note {
 	return doit.Note{
-		Title:          randString(10),
-		Description:    randString(250),
-		StateID:        1,
-		PriorityID:     1,
-		ColorID:        1,
-		ExpirationDate: time.Now().Add(time.Hour).Round(time.Second),
+		Title:       randString(10),
+		Description: randString(250),
+		StateID:     1,
+		PriorityID:  1,
+		ColorID:     1,
+		Expiration: doit.Expiration{
+			DoesExpire: true,
+			Date:       time.Now().Add(time.Hour).Round(time.Second),
+		},
 	}
 }
 

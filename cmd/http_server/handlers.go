@@ -595,3 +595,54 @@ func singleUserHandlerDELETE(w http.ResponseWriter, r *http.Request, userID int6
 
 	w.Write([]byte("User deleted successfuly"))
 }
+
+func noteStatesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	b, err := json.Marshal(doit.States)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling notes states")
+		http.Error(w, "Could not get states", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
+}
+
+func notePrioritiesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	b, err := json.Marshal(doit.Priorities)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling notes priorities")
+		http.Error(w, "Could not get states", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
+}
+
+func noteColorsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	b, err := json.Marshal(doit.Colors)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling notes colors")
+		http.Error(w, "Could not get states", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
+}

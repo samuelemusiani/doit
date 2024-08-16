@@ -57,7 +57,8 @@ func (r *SQLiteRepository) migrate() error {
     stateID INTEGER,
     priorityID INTEGER,
     colorID INTEGER,
-    expiration INTEGER,
+    does_expire BOOL,
+    expiration_date INTEGER,
     userID INTEGER,
     FOREIGN KEY(stateID) REFERENCES note_states(id),
     FOREIGN KEY(priorityID) REFERENCES note_priority(id),
@@ -70,7 +71,7 @@ func (r *SQLiteRepository) migrate() error {
 }
 
 func (r *SQLiteRepository) createNote(note doit.Note) (*doit.Note, error) {
-	res, err := r.db.Exec("INSERT INTO notes(title, description, stateID, priorityID, colorID, expiration, userID) values(?, ?, ?, ?, ?, ?, ?)", note.Title, note.Description, note.StateID, note.PriorityID, note.ColorID, note.ExpirationDate.Unix(), note.UserID)
+	res, err := r.db.Exec("INSERT INTO notes(title, description, stateID, priorityID, colorID, does_expire, expiration_date, userID) values(?, ?, ?, ?, ?, ?, ?, ?)", note.Title, note.Description, note.StateID, note.PriorityID, note.ColorID, note.Expiration.DoesExpire, note.Expiration.Date.Unix(), note.UserID)
 
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -125,12 +126,14 @@ func (r *SQLiteRepository) allNotes(userId int64) ([]doit.Note, error) {
 	for rows.Next() {
 		var note doit.Note
 		var t int64
-		err := rows.Scan(&note.ID, &note.Title, &note.Description, &note.StateID, &note.PriorityID, &note.ColorID, &t, &note.UserID)
+		err := rows.Scan(&note.ID, &note.Title, &note.Description, &note.StateID, &note.PriorityID, &note.ColorID, &note.Expiration.DoesExpire, &t, &note.UserID)
 		if err != nil {
 			return nil, err
 		}
 
-		note.ExpirationDate = time.Unix(t, 0)
+		if note.Expiration.DoesExpire {
+			note.Expiration.Date = time.Unix(t, 0)
+		}
 
 		all = append(all, note)
 	}
@@ -164,14 +167,16 @@ func (r *SQLiteRepository) getNoteByID(id int64) (*doit.Note, error) {
 
 	var note doit.Note
 	var t int64
-	err := row.Scan(&note.ID, &note.Title, &note.Description, &note.StateID, &note.PriorityID, &note.ColorID, &t, &note.UserID)
+	err := row.Scan(&note.ID, &note.Title, &note.Description, &note.StateID, &note.PriorityID, &note.ColorID, &note.Expiration.DoesExpire, &t, &note.UserID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotExists
 		}
 		return nil, err
 	}
-	note.ExpirationDate = time.Unix(t, 0)
+	if note.Expiration.DoesExpire {
+		note.Expiration.Date = time.Unix(t, 0)
+	}
 	return &note, nil
 }
 
@@ -263,8 +268,8 @@ func (r *SQLiteRepository) updateNote(id int64, note doit.Note) (*doit.Note, err
 		return nil, errors.New("invalid updated ID")
 	}
 
-	res, err := r.db.Exec("UPDATE notes SET title = ?, description = ?, stateID = ?, priorityID = ?, colorID = ?, expiration = ?, userID = ? WHERE id = ?",
-		note.Title, note.Description, note.StateID, note.PriorityID, note.ColorID, note.ExpirationDate, note.UserID, note.ID)
+	res, err := r.db.Exec("UPDATE notes SET title = ?, description = ?, stateID = ?, priorityID = ?, colorID = ?, does_expire = ?, expiration_date = ?, userID = ? WHERE id = ?",
+		note.Title, note.Description, note.StateID, note.PriorityID, note.ColorID, note.Expiration.DoesExpire, note.Expiration.Date, note.UserID, note.ID)
 
 	if err != nil {
 		return nil, err

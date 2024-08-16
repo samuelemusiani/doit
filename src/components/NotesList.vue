@@ -23,11 +23,17 @@ function deleteNote(id: number) {
   <div class="">
     <template v-for="note in $props.notes" :key="note.ID">
       <div class="m-2 flex justify-between rounded border border-black p-5">
-        <div class="">
+        <div class="w-full">
           <h3 class="font-semibold">{{ note.Title }}</h3>
           <p>
             {{ note.Description }}
           </p>
+          <div class="flex w-full justify-between">
+            <span> {{ note.StateID }} </span>
+            <span> {{ note.PriorityID }} </span>
+            <span> {{ note.ColorID }} </span>
+            <span v-if="note.Expiration.DoesExpire"> {{ note.Expiration.Date }} </span>
+          </div>
         </div>
         <div class="flex">
           <button class="rounded bg-red-200 p-2 hover:bg-red-400" @click="deleteNote(note.ID)">

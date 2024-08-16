@@ -233,6 +233,19 @@ components:
           type: string
         description:
           type: string
+        stateID:
+          type: integer
+        prioriyID:
+          type: integer
+        colorID:
+          type: integer
+        expiration:
+          type: object
+          properties:
+            DoesExpire:
+              type: boolean
+            Date:
+              type: string
     User:
       type: object
       properties:

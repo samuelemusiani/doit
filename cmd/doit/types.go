@@ -10,26 +10,26 @@ type NoteState struct {
 }
 
 var (
-	StateDone       = NoteState{State: "done"}
 	StateToDo       = NoteState{State: "todo"}
 	StateInProgress = NoteState{State: "in progress"}
 	StatePaused     = NoteState{State: "paused"}
+	StateDone       = NoteState{State: "done"}
 )
 
-var States = []*NoteState{&StateDone, &StateToDo, &StateInProgress, &StatePaused}
+var States = []*NoteState{&StateToDo, &StateInProgress, &StatePaused, &StateDone}
 
 type NotePriority struct {
 	ID       int64
-	Priority uint8
+	Priority string
 }
 
 var (
-	PriorityVeryLow  = NotePriority{Priority: 0}
-	PriorityLow      = NotePriority{Priority: 50}
-	PriorityMedium   = NotePriority{Priority: 100}
-	PriorityHigh     = NotePriority{Priority: 150}
-	PriorityVeryHigh = NotePriority{Priority: 200}
-	PriorityMax      = NotePriority{Priority: 250}
+	PriorityVeryLow  = NotePriority{Priority: "very low"}
+	PriorityLow      = NotePriority{Priority: "low"}
+	PriorityMedium   = NotePriority{Priority: "medium"}
+	PriorityHigh     = NotePriority{Priority: "high"}
+	PriorityVeryHigh = NotePriority{Priority: "very high"}
+	PriorityMax      = NotePriority{Priority: "max"}
 )
 
 var Priorities = []*NotePriority{&PriorityVeryLow, &PriorityLow, &PriorityMedium, &PriorityHigh, &PriorityVeryHigh, &PriorityMax}
@@ -41,24 +41,30 @@ type Color struct {
 }
 
 var (
-	ColorBlack = Color{Hex: "#000000"}
-	ColorRed   = Color{Hex: "#ff0000"}
-	ColorBlue  = Color{Hex: "#0000ff"}
-	ColorGreen = Color{Hex: "#00ff00"}
-	ColorWhite = Color{Hex: "#ffffff"}
+	ColorGreen  = Color{Hex: "#b0c5a4"}
+	ColorRed    = Color{Hex: "#d37676"}
+	ColorOrange = Color{Hex: "#f6995c"}
+	ColorBlue   = Color{Hex: "#51829b"}
+	ColorYellow = Color{Hex: "#ffc96f"}
+	ColorWhite  = Color{Hex: "#ffffff"}
 )
 
-var Colors = []*Color{&ColorBlack, &ColorRed, &ColorBlue, &ColorWhite}
+var Colors = []*Color{&ColorGreen, &ColorRed, &ColorOrange, &ColorBlue, &ColorYellow, &ColorWhite}
+
+type Expiration struct {
+	DoesExpire bool
+	Date       time.Time
+}
 
 type Note struct {
-	ID             int64
-	Title          string
-	Description    string
-	StateID        int64
-	PriorityID     int64
-	ColorID        int64
-	ExpirationDate time.Time
-	UserID         int64
+	ID          int64
+	Title       string
+	Description string
+	StateID     int64
+	PriorityID  int64
+	ColorID     int64
+	Expiration  Expiration
+	UserID      int64
 }
 
 type NoteResponse struct {
@@ -68,7 +74,7 @@ type NoteResponse struct {
 	State          NoteState
 	Priority       NotePriority
 	Color          Color
-	ExpirationDate time.Time
+	ExpirationDate Expiration
 }
 
 type User struct {
