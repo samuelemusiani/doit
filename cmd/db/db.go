@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"log/slog"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -26,6 +27,12 @@ func Init() error {
 	if err != nil {
 		return err
 	}
+
+	err = fillDB()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -86,4 +93,23 @@ func DeleteUserByID(id int64) error {
 
 func UpdateUser(id int64, user doit.User) (*doit.User, error) {
 	return global_db.updateUser(id, user)
+}
+
+func fillDB() error {
+	err := global_db.insertNoteStates(doit.States)
+	if err != nil {
+		return errors.Join(err, errors.New("Inserting states into db"))
+	}
+
+	err = global_db.insertNotePriorities(doit.Priorities)
+	if err != nil {
+		return errors.Join(err, errors.New("Inserting states into db"))
+	}
+
+	err = global_db.insertNoteColors(doit.Colors)
+	if err != nil {
+		return errors.Join(err, errors.New("Inserting states into db"))
+	}
+
+	return nil
 }

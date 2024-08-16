@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/samuelemusiani/doit/cmd/config"
 	"github.com/samuelemusiani/doit/cmd/doit"
@@ -51,8 +52,12 @@ func newPassword() (string, error) {
 
 func newNote() doit.Note {
 	return doit.Note{
-		Title:       randString(10),
-		Description: randString(250),
+		Title:          randString(10),
+		Description:    randString(250),
+		StateID:        1,
+		PriorityID:     1,
+		ColorID:        1,
+		ExpirationDate: time.Now().Add(time.Hour).Round(time.Second),
 	}
 }
 
@@ -406,6 +411,14 @@ func TestDeleteNotesByUserID(t *testing.T) {
 	dbNotes, err := AllNotes(userID)
 	assert.NilError(t, err)
 	assert.Check(t, len(dbNotes) == 0)
+
+	err = cleanup()
+	assert.NilError(t, err)
+}
+
+func TestInsertNoteStates(t *testing.T) {
+	err := setup()
+	assert.NilError(t, err)
 
 	err = cleanup()
 	assert.NilError(t, err)

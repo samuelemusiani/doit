@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/mattn/go-sqlite3"
 	"github.com/samuelemusiani/doit/cmd/doit"
@@ -37,11 +38,30 @@ func (r *SQLiteRepository) migrate() error {
     active BOOL NOT NULL,
     password TINYTEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS note_states(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    state TINYTEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS note_priority(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    priority INTEGER NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS note_colors(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    color TINYTEXT NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS notes(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
+    stateID INTEGER,
+    priorityID INTEGER,
+    colorID INTEGER,
+    expiration INTEGER,
     userID INTEGER,
+    FOREIGN KEY(stateID) REFERENCES note_states(id),
+    FOREIGN KEY(priorityID) REFERENCES note_priority(id),
+    FOREIGN KEY(colorID) REFERENCES note_colors(id),
     FOREIGN KEY(userID) REFERENCES users(id)
   );
   `
@@ -50,7 +70,7 @@ func (r *SQLiteRepository) migrate() error {
 }
 
 func (r *SQLiteRepository) createNote(note doit.Note) (*doit.Note, error) {
-	res, err := r.db.Exec("INSERT INTO notes(title, description, userID) values(?, ?, ?)", note.Title, note.Description, note.UserID)
+	res, err := r.db.Exec("INSERT INTO notes(title, description, stateID, priorityID, colorID, expiration, userID) values(?, ?, ?, ?, ?, ?, ?)", note.Title, note.Description, note.StateID, note.PriorityID, note.ColorID, note.ExpirationDate.Unix(), note.UserID)
 
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -104,9 +124,13 @@ func (r *SQLiteRepository) allNotes(userId int64) ([]doit.Note, error) {
 	var all []doit.Note
 	for rows.Next() {
 		var note doit.Note
-		if err := rows.Scan(&note.ID, &note.Title, &note.Description, &note.UserID); err != nil {
+		var t int64
+		err := rows.Scan(&note.ID, &note.Title, &note.Description, &note.StateID, &note.PriorityID, &note.ColorID, &t, &note.UserID)
+		if err != nil {
 			return nil, err
 		}
+
+		note.ExpirationDate = time.Unix(t, 0)
 
 		all = append(all, note)
 	}
@@ -139,12 +163,15 @@ func (r *SQLiteRepository) getNoteByID(id int64) (*doit.Note, error) {
 	row := r.db.QueryRow("SELECT * FROM notes WHERE id = ?", id)
 
 	var note doit.Note
-	if err := row.Scan(&note.ID, &note.Title, &note.Description, &note.UserID); err != nil {
+	var t int64
+	err := row.Scan(&note.ID, &note.Title, &note.Description, &note.StateID, &note.PriorityID, &note.ColorID, &t, &note.UserID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNotExists
 		}
 		return nil, err
 	}
+	note.ExpirationDate = time.Unix(t, 0)
 	return &note, nil
 }
 
@@ -236,8 +263,8 @@ func (r *SQLiteRepository) updateNote(id int64, note doit.Note) (*doit.Note, err
 		return nil, errors.New("invalid updated ID")
 	}
 
-	res, err := r.db.Exec("UPDATE notes SET title = ?, description = ?, userID = ? WHERE id = ?",
-		note.Title, note.Description, note.UserID, note.ID)
+	res, err := r.db.Exec("UPDATE notes SET title = ?, description = ?, stateID = ?, priorityID = ?, colorID = ?, expiration = ?, userID = ? WHERE id = ?",
+		note.Title, note.Description, note.StateID, note.PriorityID, note.ColorID, note.ExpirationDate, note.UserID, note.ID)
 
 	if err != nil {
 		return nil, err
@@ -277,4 +304,79 @@ func (r *SQLiteRepository) updateUser(id int64, user doit.User) (*doit.User, err
 	}
 
 	return &user, nil
+}
+
+func (r *SQLiteRepository) insertNoteStates(s []*doit.NoteState) error {
+	for i := range s {
+		row := r.db.QueryRow("SELECT * FROM note_states WHERE state = ?", s[i].State)
+
+		if err := row.Scan(&s[i].ID, &s[i].State); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				res, err := r.db.Exec("INSERT INTO note_states(state) values(?)", s[i].State)
+				if err != nil {
+					return err
+				}
+
+				id, err := res.LastInsertId()
+				if err != nil {
+					return err
+				}
+
+				s[i].ID = id
+			} else {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (r *SQLiteRepository) insertNotePriorities(s []*doit.NotePriority) error {
+	for i := range s {
+		row := r.db.QueryRow("SELECT * FROM note_priority WHERE priority = ?", s[i].Priority)
+
+		if err := row.Scan(&s[i].ID, &s[i].Priority); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				res, err := r.db.Exec("INSERT INTO note_priority(priority) values(?)", s[i].Priority)
+				if err != nil {
+					return err
+				}
+
+				id, err := res.LastInsertId()
+				if err != nil {
+					return err
+				}
+
+				s[i].ID = id
+			} else {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (r *SQLiteRepository) insertNoteColors(s []*doit.Color) error {
+	for i := range s {
+		row := r.db.QueryRow("SELECT * FROM note_colors WHERE color = ?", s[i].Hex)
+
+		if err := row.Scan(&s[i].ID, &s[i].Hex); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				res, err := r.db.Exec("INSERT INTO note_colors(color) values(?)", s[i].Hex)
+				if err != nil {
+					return err
+				}
+
+				id, err := res.LastInsertId()
+				if err != nil {
+					return err
+				}
+
+				s[i].ID = id
+			} else {
+				return err
+			}
+		}
+	}
+	return nil
 }
