@@ -43,7 +43,7 @@ function updateTodo(todo: Todo) {
     })
 }
 
-function deleteNote(id: number) {
+function deleteTodo(id: number) {
   fetch(NOTES_URL + '/' + id, {
     method: 'DELETE',
     credentials: 'include'
@@ -130,7 +130,7 @@ onMounted(async () => {
       <NotesList
         :notes="_actual_todos"
         @updateTodo="updateTodo"
-        @deleteNote="deleteNote"
+        @deleteTodo="deleteTodo"
         class=""
       />
     </div>

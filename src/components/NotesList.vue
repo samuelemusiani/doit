@@ -15,7 +15,7 @@ const $props = defineProps({
 })
 
 const $emits = defineEmits<{
-  (event: 'deleteNote', id: number): void
+  (event: 'deleteTodo', id: number): void
   (event: 'updateTodo', todo: Todo): void
 }>()
 
@@ -57,6 +57,11 @@ function modifyNote(todo: Todo) {
   _modify_todo.value = false
 }
 
+function deleteTodo(todo: Todo) {
+  $emits('deleteTodo', todo.ID)
+  _modify_todo.value = false
+}
+
 function closeModify() {
   _modify_todo.value = false
 }
@@ -70,6 +75,7 @@ function closeModify() {
       v-if="_modify_todo"
       @close="closeModify"
       @addModifyNote="modifyNote"
+      @deleteTodo="deleteTodo"
       ref="__modify_ref"
     />
     <template v-for="note in $props.notes.sort(sortTodos)" :key="note.ID">

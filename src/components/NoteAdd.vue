@@ -22,6 +22,7 @@ const $props = defineProps({
 const $emits = defineEmits<{
   (e: 'close'): void
   (e: 'addModifyNote', note: Todo): void
+  (e: 'deleteTodo', todo: Todo): void
 }>()
 
 const __top_div = ref<HTMLElement | null>(null)
@@ -67,6 +68,12 @@ if ($props.todo) {
 
 function close() {
   $emits('close')
+}
+
+function deleteTodo() {
+  if ($props.todo) {
+    $emits('deleteTodo', $props.todo)
+  }
 }
 
 function addModifyNote() {
@@ -207,6 +214,9 @@ onBeforeUnmount(() => {
 
         <div class="mt-5 flex justify-around">
           <button @click="close()" class="rounded bg-red-200 p-2 hover:bg-red-400">Close</button>
+          <button @click="deleteTodo()" class="rounded bg-red-500 p-2 hover:bg-red-800">
+            DELETE
+          </button>
           <button @click="addModifyNote()" class="rounded bg-blue-200 p-2 hover:bg-blue-400">
             {{ $props.modify ? 'Modify' : 'Add' }}
           </button>
