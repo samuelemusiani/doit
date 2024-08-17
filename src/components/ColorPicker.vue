@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { TodoColor } from '@/types'
 import type { PropType } from 'vue'
-import { ref } from 'vue'
 const $props = defineProps({
   colors: {
     type: Array as PropType<TodoColor[]>,

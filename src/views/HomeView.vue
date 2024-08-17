@@ -75,20 +75,22 @@ function addNote(note: Todo) {
   __addNote.value = false
 }
 
-function keyboardListener(event: KeyboardEvent) {
-  if (event.key == 'a') {
-    __addNote.value = true
-  }
-}
-
+// For now this does not work because if we use need to type 'a' in a nested
+// component the function will fire anyway
+//function keyboardListener(event: KeyboardEvent) {
+//  if (event.key == 'a') {
+//    __addNote.value = true
+//  }
+//}
+//
 onMounted(async () => {
-  window.addEventListener('keypress', keyboardListener)
+  //  window.addEventListener('keypress', keyboardListener)
   fetchNotes()
 })
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keypress', keyboardListener)
-})
+//
+//onBeforeUnmount(() => {
+//  window.removeEventListener('keypress', keyboardListener)
+//})
 </script>
 
 <template>
@@ -98,7 +100,12 @@ onBeforeUnmount(() => {
       <NotesList :notes="_notes" @updateTodo="updateTodo" @deleteNote="deleteNote" class="" />
     </div>
   </div>
-  <NoteAdd @addNote="addNote" @close="__addNote = false" v-if="__addNote" ref="__addNote_ref" />
+  <NoteAdd
+    @addModifyNote="addNote"
+    @close="__addNote = false"
+    v-if="__addNote"
+    ref="__addNote_ref"
+  />
   <button
     class="absolute bottom-5 right-5 rounded bg-blue-200 p-5 hover:bg-blue-400"
     @click="__addNote = true"

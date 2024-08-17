@@ -4,10 +4,22 @@ import { ref, inject } from 'vue'
 import { useDraggable, useFocus } from '@vueuse/core'
 
 import ColorPicker from '@/components/ColorPicker.vue'
+import type { PropType } from 'vue'
+
+const $props = defineProps({
+  todo: {
+    type: Object as PropType<Todo>,
+    required: false
+  },
+  modify: {
+    type: Boolean as PropType<Boolean>,
+    required: false
+  }
+})
 
 const $emits = defineEmits<{
   (e: 'close'): void
-  (e: 'addNote', note: Todo): void
+  (e: 'addModifyNote', note: Todo): void
 }>()
 
 const __top_div = ref<HTMLElement | null>(null)
@@ -35,11 +47,27 @@ const _time = ref<string>('')
 
 const _todo_options = inject('todoOptions') as Options
 
+// If a todo is passed as a prop we insert the values in the refs
+if ($props.todo) {
+  _title.value = $props.todo.Title
+  _description.value = $props.todo.Description
+  _state.value = $props.todo.StateID
+  _priority.value = $props.todo.PriorityID
+  _color.value = $props.todo.ColorID
+  _does_expire.value = $props.todo.Expiration.DoesExpire
+  if (_does_expire.value) {
+    // Ugly, I know
+    let d = new Date($props.todo.Expiration.Date).toISOString().split('T')
+    _date.value = d[0]
+    _time.value = d[1].split('.')[0]
+  }
+}
+
 function close() {
   $emits('close')
 }
 
-function addNote() {
+function addModifyNote() {
   if (_title.value === '') {
     return
   }
@@ -52,17 +80,14 @@ function addNote() {
     }
   }
 
-  let d: Date
+  let d: Date = new Date()
   if (_does_expire.value) {
-    d = new Date(_date.value)
-    d.setHours(parseInt(_time.value.split(':')[0]))
-    d.setMinutes(parseInt(_time.value.split(':')[1]))
-  } else {
-    d = new Date()
+    d = new Date(_date.value + ' ' + _time.value)
   }
 
+  let id = $props.todo?.ID
   let n: Todo = {
-    ID: 0,
+    ID: id ? id : 0,
     Title: _title.value,
     Description: _description.value,
     StateID: _state.value,
@@ -74,7 +99,7 @@ function addNote() {
     }
   }
 
-  $emits('addNote', n)
+  $emits('addModifyNote', n)
 }
 </script>
 
@@ -85,7 +110,9 @@ function addNote() {
     ref="__top_div"
   >
     <header class="flex justify-between rounded bg-gray-200" ref="__header">
-      <h1 class="flex-auto p-5 text-center font-bold">Add a Note</h1>
+      <h1 class="flex-auto p-5 text-center font-bold">
+        {{ $props.modify ? 'Modify' : 'Add' }} a Note
+      </h1>
     </header>
 
     <body class="">
@@ -162,12 +189,12 @@ function addNote() {
             v-model="_time"
           />
         </div>
-        {{ _date }}
-        {{ _time }}
 
         <div class="mt-5 flex justify-around">
           <button @click="close()" class="rounded bg-red-200 p-2 hover:bg-red-400">Close</button>
-          <button @click="addNote()" class="rounded bg-blue-200 p-2 hover:bg-blue-400">Add</button>
+          <button @click="addModifyNote()" class="rounded bg-blue-200 p-2 hover:bg-blue-400">
+            {{ $props.modify ? 'Modify' : 'Add' }}
+          </button>
         </div>
       </form>
     </body>

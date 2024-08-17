@@ -221,6 +221,8 @@ func singleNoteHandlerPUT(w http.ResponseWriter, r *http.Request, noteID int64, 
 		return
 	}
 
+	note.UserID = userID
+
 	newNote, err := db.UpdateNote(noteID, note, userID)
 	if err != nil {
 		slog.With("err", err).Error("Updating note")

@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import NoteAdd from './NoteAdd.vue'
 import type { PropType } from 'vue'
 import type { Options, Todo } from '@/types'
-import { inject } from 'vue'
+import { inject, ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 
 const _todo_options = inject('todoOptions') as Options
 
@@ -16,6 +18,13 @@ const $emits = defineEmits<{
   (event: 'deleteNote', id: number): void
   (event: 'updateTodo', todo: Todo): void
 }>()
+
+const _todo_to_modify = ref<Todo>()
+const _modify_todo = ref<boolean>()
+const __modify_ref = ref<HTMLElement | null>(null)
+onClickOutside(__modify_ref, () => {
+  closeModify()
+})
 
 function sortTodos(a: Todo, b: Todo) {
   let diff = b.PriorityID - a.PriorityID
@@ -37,22 +46,44 @@ function advanceStateTodo(todo: Todo) {
 
   $emits('updateTodo', todo)
 }
+
+function callModify(todo: Todo) {
+  _todo_to_modify.value = todo
+  _modify_todo.value = true
+}
+
+function modifyNote(todo: Todo) {
+  $emits('updateTodo', todo)
+  _modify_todo.value = false
+}
+
+function closeModify() {
+  _modify_todo.value = false
+}
 </script>
 
 <template>
-  <div class="">
+  <div>
+    <NoteAdd
+      :todo="_todo_to_modify"
+      :modify="true"
+      v-if="_modify_todo"
+      @close="closeModify"
+      @addModifyNote="modifyNote"
+      ref="__modify_ref"
+    />
     <template v-for="note in $props.notes.sort(sortTodos)" :key="note.ID">
-      <div class="m-2 flex justify-between rounded border border-black p-5">
+      <div class="m-2 flex justify-between rounded border border-black p-5 hover:bg-gray-100">
         <div class="mr-5 grid items-center">
           <button
-            class="w-24 rounded p-2 hover:opacity-90"
+            class="w-24 rounded p-2 hover:saturate-150"
             @click="advanceStateTodo(note)"
             :style="{ 'background-color': _todo_options.Colors[note.ColorID - 1].Hex }"
           >
             {{ _todo_options.States[note.StateID - 1].State }}
           </button>
         </div>
-        <div class="w-full">
+        <div class="w-full" @click="callModify(note)">
           <h3 class="font-semibold">{{ note.Title }}</h3>
           <p>
             {{ note.Description }}
