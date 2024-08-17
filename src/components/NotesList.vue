@@ -38,11 +38,10 @@ function sortTodos(a: Todo, b: Todo) {
   return b.PriorityID - a.PriorityID
 }
 
-function advanceStateTodo(todo: Todo) {
-  todo.StateID = (todo.StateID + 1) % (_todo_options.States.length + 1)
-  if (todo.StateID == 0) {
-    todo.StateID = 1
-  }
+function advanceStateTodo(todo: Todo, negative: boolean) {
+  todo.StateID = todo.StateID + (negative ? -1 : 1)
+  todo.StateID = Math.min(todo.StateID, _todo_options.States.length)
+  todo.StateID = Math.max(todo.StateID, 1)
 
   $emits('updateTodo', todo)
 }
@@ -86,7 +85,8 @@ function closeModify() {
         <div class="mr-5 grid items-center">
           <button
             class="w-24 rounded p-2 hover:saturate-150"
-            @click.stop="advanceStateTodo(note)"
+            @click.stop.exact="advanceStateTodo(note, false)"
+            @click.stop.shift="advanceStateTodo(note, true)"
             :style="{ 'background-color': _todo_options.Colors[note.ColorID - 1].Hex }"
           >
             {{ _todo_options.States[note.StateID - 1].State }}
