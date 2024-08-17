@@ -128,7 +128,7 @@ func notesHandlerPOST(w http.ResponseWriter, r *http.Request, userID int64) {
 
 func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
-		w.Header().Set("Allow", "GET OPTIONS DELETE")
+		w.Header().Set("Allow", "GET OPTIONS PUT DELETE")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte{})
 		return
@@ -166,6 +166,8 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 		singleNoteHandlerGET(w, r, id, s.userID)
 	case http.MethodDelete:
 		singleNoteHandlerDELETE(w, r, id, s.userID)
+	case http.MethodPut:
+		singleNoteHandlerPUT(w, r, id, s.userID)
 	default:
 		slog.With("method", r.Method).Error("Method not valid. How did we get here?")
 		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
@@ -202,6 +204,38 @@ func singleNoteHandlerGET(w http.ResponseWriter, r *http.Request, noteID int64, 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jnote)
+}
+
+func singleNoteHandlerPUT(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		slog.With("err", err).Error("Reading body")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	var note doit.Note
+	err = json.Unmarshal(body, &note)
+	if err != nil {
+		http.Error(w, "Could not unmarshal body", http.StatusBadRequest)
+		return
+	}
+
+	newNote, err := db.UpdateNote(noteID, note, userID)
+	if err != nil {
+		slog.With("err", err).Error("Updating note")
+		http.Error(w, "Could not update note", http.StatusBadRequest)
+		return
+	}
+
+	b, err := json.Marshal(*newNote)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling note update")
+		w.Write([]byte("Note updated, but can't be returned"))
+		return
+	}
+
+	w.Write(b)
 }
 
 func singleNoteHandlerDELETE(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {

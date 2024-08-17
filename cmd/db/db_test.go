@@ -342,6 +342,25 @@ func TestGetNoteById(t *testing.T) {
 	assert.NilError(t, err)
 }
 
+func TestUpdateNoteByID(t *testing.T) {
+	err := setup()
+	assert.NilError(t, err)
+
+	user, err := createAndInsertUser()
+	assert.NilError(t, err)
+
+	note, err := createAndInsertNote(user.ID)
+	assert.NilError(t, err)
+
+	newNote := newNote()
+	newNote.ID = note.ID
+	newNote.UserID = note.UserID
+
+	modNote, err := UpdateNote(note.ID, newNote, note.UserID)
+	assert.NilError(t, err)
+	assert.Equal(t, *modNote, newNote)
+}
+
 func TestDeleteNoteByID(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)

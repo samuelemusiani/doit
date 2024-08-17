@@ -28,6 +28,20 @@ async function fetchNotes() {
   }
 }
 
+function updateTodo(todo: Todo) {
+  fetch(NOTES_URL + '/' + todo.ID, {
+    method: 'PUT',
+    credentials: 'include',
+    body: JSON.stringify(todo)
+  })
+    .then(() => {
+      fetchNotes()
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+}
+
 function deleteNote(id: number) {
   fetch(NOTES_URL + '/' + id, {
     method: 'DELETE',
@@ -69,7 +83,7 @@ onMounted(async () => {
   <div class="flex justify-center">
     <div class="flex w-[70%] flex-col">
       <h1 class="p-2 text-xl font-bold">Todos:</h1>
-      <NotesList :notes="_notes" @deleteNote="deleteNote" class="" />
+      <NotesList :notes="_notes" @updateTodo="updateTodo" @deleteNote="deleteNote" class="" />
     </div>
   </div>
   <NoteAdd @addNote="addNote" @close="__addNote = false" v-if="__addNote" ref="__addNote_ref" />

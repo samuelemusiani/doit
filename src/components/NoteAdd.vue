@@ -49,9 +49,14 @@ function addNote() {
     }
   }
 
-  let d = new Date(_date.value)
-  d.setHours(parseInt(_time.value.split(':')[0]))
-  d.setMinutes(parseInt(_time.value.split(':')[1]))
+  let d: Date
+  if (_does_expire.value) {
+    d = new Date(_date.value)
+    d.setHours(parseInt(_time.value.split(':')[0]))
+    d.setMinutes(parseInt(_time.value.split(':')[1]))
+  } else {
+    d = new Date()
+  }
 
   let n: Todo = {
     ID: 0,

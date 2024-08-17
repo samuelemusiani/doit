@@ -63,8 +63,8 @@ func DeleteNotesByUserID(userID int64) error {
 	return global_db.deleteNotesByUserID(userID)
 }
 
-func UpdateNote(id int64, note doit.Note) (*doit.Note, error) {
-	return global_db.updateNote(id, note)
+func UpdateNote(noteID int64, note doit.Note, userID int64) (*doit.Note, error) {
+	return global_db.updateNote(noteID, note, userID)
 }
 
 func CreateUser(user doit.User) (*doit.User, error) {

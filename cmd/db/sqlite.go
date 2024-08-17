@@ -263,13 +263,13 @@ func (r *SQLiteRepository) deleteUserByID(id int64) error {
 	return nil
 }
 
-func (r *SQLiteRepository) updateNote(id int64, note doit.Note) (*doit.Note, error) {
+func (r *SQLiteRepository) updateNote(id int64, note doit.Note, userID int64) (*doit.Note, error) {
 	if id == 0 {
 		return nil, errors.New("invalid updated ID")
 	}
 
-	res, err := r.db.Exec("UPDATE notes SET title = ?, description = ?, stateID = ?, priorityID = ?, colorID = ?, does_expire = ?, expiration_date = ?, userID = ? WHERE id = ?",
-		note.Title, note.Description, note.StateID, note.PriorityID, note.ColorID, note.Expiration.DoesExpire, note.Expiration.Date, note.UserID, note.ID)
+	res, err := r.db.Exec("UPDATE notes SET title = ?, description = ?, stateID = ?, priorityID = ?, colorID = ?, does_expire = ?, expiration_date = ?, userID = ? WHERE id = ? AND userID = ?",
+		note.Title, note.Description, note.StateID, note.PriorityID, note.ColorID, note.Expiration.DoesExpire, note.Expiration.Date.Unix(), note.UserID, note.ID, userID)
 
 	if err != nil {
 		return nil, err
