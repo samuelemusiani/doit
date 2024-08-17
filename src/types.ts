@@ -33,3 +33,14 @@ export interface Options {
   Priorities: TodoPriority[]
   Colors: TodoColor[]
 }
+
+export interface User {
+  ID: number
+  Username: string
+  Email: string
+  Name: string
+  Surname: string
+  Admin: boolean
+  External: boolean
+  Active: boolean
+}
