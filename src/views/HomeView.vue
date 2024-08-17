@@ -75,21 +75,35 @@ function addNote(note: Todo) {
   __addNote.value = false
 }
 
-const _filter = ref<number>(0)
+const _filter_state = ref<number>(0)
+const _filter_search = ref<string>('')
 
 const _todos_options = inject('todoOptions') as Options
 
 const _actual_todos = computed(() => {
-  if (_filter.value === 0) {
-    // We assume that the 'done' state is the last one
-    return _notes.value.filter((e) => e.StateID != _todos_options.States.length)
-  } else {
-    return _notes.value.filter((e) => e.StateID == _filter.value)
-  }
+  return _notes.value.filter((e) => {
+    let c1: boolean
+    let c2: boolean
+
+    if (_filter_state.value === 0) {
+      c1 = e.StateID != _todos_options.States.length
+    } else {
+      c1 = e.StateID == _filter_state.value
+    }
+
+    if (_filter_search) {
+      c2 = e.Title.toLowerCase().includes(_filter_search.value)
+      c2 = c2 || e.Description.toLowerCase().includes(_filter_search.value)
+    } else {
+      c2 = true
+    }
+
+    return c1 && c2
+  })
 })
 
 function filterTodos(s: number) {
-  _filter.value = s
+  _filter_state.value = s
 }
 
 // For now this does not work because if we use need to type 'a' in a nested
@@ -111,7 +125,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex justify-center">
+  <div class="mt-2 flex justify-center">
     <div class="flex w-1/2 flex-col">
       <NotesList
         :notes="_actual_todos"
@@ -120,8 +134,18 @@ onMounted(async () => {
         class=""
       />
     </div>
-    <div class="ml-5 mt-9">
-      <TodoStats :todos="_notes" @selected="filterTodos" />
+    <div class="ml-5 mt-2">
+      <div class="">
+        <TodoStats :todos="_notes" @selected="filterTodos" />
+      </div>
+      <div class="mt-5">
+        <input
+          type="text"
+          v-model="_filter_search"
+          class="rounded border p-2 outline-none"
+          placeholder="search..."
+        />
+      </div>
     </div>
   </div>
   <NoteAdd
