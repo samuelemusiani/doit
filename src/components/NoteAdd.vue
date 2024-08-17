@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Options, Todo } from '@/types'
 import { ref, inject } from 'vue'
-import { useDraggable } from '@vueuse/core'
+import { useDraggable, useFocus } from '@vueuse/core'
 
 import ColorPicker from '@/components/ColorPicker.vue'
 
@@ -19,6 +19,9 @@ const { style } = useDraggable(__top_div, {
   },
   handle: __header
 })
+
+const __title_input = ref<HTMLElement | null>(null)
+useFocus(__title_input, { initialValue: true })
 
 const _title = ref<string>('')
 const _description = ref<string>('')
@@ -93,6 +96,7 @@ function addNote() {
           class="rounded border p-2 focus:border-black focus:outline-none"
           required
           v-model="_title"
+          ref="__title_input"
         />
 
         <label class="mt-5">Description</label>

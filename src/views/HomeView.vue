@@ -7,6 +7,7 @@ import { onClickOutside } from '@vueuse/core'
 import { onMounted, ref } from 'vue'
 import { NOTES_URL } from '@/consts'
 import type { Todo } from '@/types'
+import { onBeforeUnmount } from 'vue'
 
 const _notes = ref<Todo[]>([])
 const __addNote = ref<boolean>(false)
@@ -74,8 +75,19 @@ function addNote(note: Todo) {
   __addNote.value = false
 }
 
+function keyboardListener(event: KeyboardEvent) {
+  if (event.key == 'a') {
+    __addNote.value = true
+  }
+}
+
 onMounted(async () => {
+  window.addEventListener('keypress', keyboardListener)
   fetchNotes()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keypress', keyboardListener)
 })
 </script>
 
