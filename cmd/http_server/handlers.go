@@ -291,7 +291,18 @@ func loginHandlerGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := db.GetUserByID(s.userID)
-	w.Write([]byte(fmt.Sprintf("Logged in as user %s with id %d", user.Username, user.ID)))
+	if err != nil {
+		http.Error(w, "Could not get user", http.StatusInternalServerError)
+		return
+	}
+
+	userResp := doit.UserToResponse(user)
+	b, err := json.Marshal(*userResp)
+	if err != nil {
+		http.Error(w, "Could not marshal user response", http.StatusInternalServerError)
+		return
+	}
+	w.Write(b)
 	return
 }
 
