@@ -5,6 +5,8 @@ import { useDraggable, useFocus } from '@vueuse/core'
 
 import ColorPicker from '@/components/ColorPicker.vue'
 import type { PropType } from 'vue'
+import { onMounted } from 'vue'
+import { onBeforeUnmount } from 'vue'
 
 const $props = defineProps({
   todo: {
@@ -101,6 +103,19 @@ function addModifyNote() {
 
   $emits('addModifyNote', n)
 }
+
+function keyboardLIstener(event: KeyboardEvent) {
+  if (event.key == 'Escape') {
+    close()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keyup', keyboardLIstener)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('keyup', keyboardLIstener)
+})
 </script>
 
 <template>

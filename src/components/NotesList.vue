@@ -73,17 +73,20 @@ function closeModify() {
       ref="__modify_ref"
     />
     <template v-for="note in $props.notes.sort(sortTodos)" :key="note.ID">
-      <div class="m-2 flex justify-between rounded border border-black p-5 hover:bg-gray-100">
+      <div
+        class="m-2 flex justify-between rounded border border-black p-5 hover:bg-gray-100"
+        @click="callModify(note)"
+      >
         <div class="mr-5 grid items-center">
           <button
             class="w-24 rounded p-2 hover:saturate-150"
-            @click="advanceStateTodo(note)"
+            @click.stop="advanceStateTodo(note)"
             :style="{ 'background-color': _todo_options.Colors[note.ColorID - 1].Hex }"
           >
             {{ _todo_options.States[note.StateID - 1].State }}
           </button>
         </div>
-        <div class="w-full" @click="callModify(note)">
+        <div class="w-full">
           <h3 class="font-semibold">{{ note.Title }}</h3>
           <p>
             {{ note.Description }}
