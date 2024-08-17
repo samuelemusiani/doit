@@ -86,16 +86,21 @@ function closeModify() {
             {{ _todo_options.States[note.StateID - 1].State }}
           </button>
         </div>
-        <div class="w-full">
-          <h3 class="font-semibold">{{ note.Title }}</h3>
-          <p>
-            {{ note.Description }}
-          </p>
-          <div class="flex w-full justify-end">
-            <span v-if="note.Expiration.DoesExpire">
+        <div class="flex w-full justify-between">
+          <div>
+            <h3 class="font-semibold">{{ note.Title }}</h3>
+            <p>
+              {{ note.Description }}
+            </p>
+          </div>
+          <div class="flex flex-col justify-between">
+            <div class="text-right">
+              {{ _todo_options.Priorities[note.PriorityID - 1].Priority }}
+            </div>
+            <div v-if="note.Expiration.DoesExpire">
               {{ new Date(note.Expiration.Date).toDateString() }}
               {{ new Date(note.Expiration.Date).toLocaleTimeString() }}
-            </span>
+            </div>
           </div>
         </div>
       </div>
