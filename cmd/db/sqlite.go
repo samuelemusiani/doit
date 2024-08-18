@@ -65,6 +65,10 @@ func (r *SQLiteRepository) migrate() error {
     FOREIGN KEY(colorID) REFERENCES note_colors(id),
     FOREIGN KEY(userID) REFERENCES users(id)
   );
+  CREATE TABLE IF NOT EXISTS internals(
+    key TEXT NOT NULL UNIQUE PRIMARY KEY,
+    data BLOB NOT NULL
+  );
   `
 	_, err := r.db.Exec(query)
 	return err
@@ -383,5 +387,36 @@ func (r *SQLiteRepository) insertNoteColors(s []*doit.Color) error {
 			}
 		}
 	}
+	return nil
+}
+
+func (r *SQLiteRepository) getInternal(key string) ([]byte, error) {
+	row := r.db.QueryRow("SELECT data FROM internals WHERE key = ?", key)
+
+	var blob []byte
+	if err := row.Scan(&blob); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotExists
+		} else {
+			return nil, err
+		}
+	}
+
+	return blob, nil
+}
+
+func (r *SQLiteRepository) addInternal(key string, data []byte) error {
+	_, err := r.db.Exec("INSERT INTO internals(key, data) values(?, ?)", key, data)
+
+	if err != nil {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+				return ErrDuplicate
+			}
+		}
+		return err
+	}
+
 	return nil
 }

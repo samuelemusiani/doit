@@ -18,10 +18,15 @@ type Log struct {
 	Log_level string
 }
 
+type Users struct {
+	First_User string
+}
+
 type Config struct {
 	Server  Sever
 	Databse Databse
 	Log     Log
+	Users   Users
 }
 
 var config Config = Config{
@@ -33,6 +38,9 @@ var config Config = Config{
 	},
 	Log: Log{
 		Log_level: "info",
+	},
+	Users: Users{
+		First_User: "admin",
 	},
 }
 

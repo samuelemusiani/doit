@@ -24,16 +24,6 @@ func cleanup() error {
 	return Close()
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-func randString(n int) string {
-	b := make([]byte, n)
-	for i := range n {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
-	}
-	return string(b)
-}
-
 func randBool() bool {
 	if rand.Intn(2) == 0 {
 		return false
@@ -137,6 +127,7 @@ func TestAllUsers(t *testing.T) {
 
 	n := rand.Intn(10) + 10
 	users := make([]doit.User, n)
+
 	for i := range n {
 		user, err := createAndInsertUser()
 		assert.NilError(t, err)
@@ -151,7 +142,8 @@ func TestAllUsers(t *testing.T) {
 	slices.SortFunc(users, sortFunc)
 	slices.SortFunc(dbUsers, sortFunc)
 
-	assert.DeepEqual(t, users, dbUsers)
+	// Skip the first user as not generated here, it's the default admin
+	assert.DeepEqual(t, users, dbUsers[1:])
 
 	err = cleanup()
 	assert.NilError(t, err)
