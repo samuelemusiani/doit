@@ -57,6 +57,7 @@ router.beforeEach(async (to) => {
       }
     } catch (err) {
       console.error(err)
+      return '/login'
     }
   }
 })

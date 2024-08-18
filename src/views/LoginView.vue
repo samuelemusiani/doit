@@ -18,8 +18,11 @@ async function _login() {
   login(_username.value, _password.value)
     .then(() => router.push({ name: 'home' }))
     .catch((err) => {
+      _errorText.value = "Something went wrong. Can't login"
       console.error(err)
     })
+
+  _password.value = ''
 }
 </script>
 
