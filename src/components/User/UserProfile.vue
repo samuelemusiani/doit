@@ -32,10 +32,6 @@ const $props = defineProps({
       <span> Admin: </span>
       <span> {{ $props.user.Admin }} </span>
     </div>
-    <div class="p-2">
-      <span> External: </span>
-      <span> {{ $props.user.External }} </span>
-    </div>
   </div>
 </template>
 

@@ -41,6 +41,5 @@ export interface User {
   Name: string
   Surname: string
   Admin: boolean
-  External: boolean
   Active: boolean
 }

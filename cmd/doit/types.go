@@ -107,7 +107,6 @@ type UserResponse struct {
 	Name     string
 	Surname  string
 	Admin    bool
-	External bool
 	Active   bool
 }
 

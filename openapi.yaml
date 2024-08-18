@@ -178,7 +178,7 @@ paths:
           description: Internal server error
 
     delete:
-      description: Delete an user. Only valid if is local and not external
+      description: Delete an user
       tags:
         - users
       responses:
