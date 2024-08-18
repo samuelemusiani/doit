@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { RouterView, useRoute } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
-import { onMounted, ref, provide, computed } from 'vue'
-import { COLORS_URL, LOGIN_ENDPOINT, PRIORITIES_URL, STATES_URL } from './consts'
+import { onMounted, provide, computed } from 'vue'
+import { LOGIN_ENDPOINT } from './consts'
 import type { Options } from './types'
+import { getColors, getPriorities, getStates } from './lib/api'
 
 const $route = useRoute()
 
@@ -15,29 +16,23 @@ const _options = {} as Options
 provide('todoOptions', _options)
 
 onMounted(() => {
-  fetch(STATES_URL)
-    .then(async (res) => {
-      _options.States = await res.json()
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+  try {
+    getStates().then((states) => (_options.States = states))
+  } catch (err) {
+    console.error(err)
+  }
 
-  fetch(PRIORITIES_URL)
-    .then(async (res) => {
-      _options.Priorities = await res.json()
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+  try {
+    getPriorities().then((priorities) => (_options.Priorities = priorities))
+  } catch (err) {
+    console.error(err)
+  }
 
-  fetch(COLORS_URL)
-    .then(async (res) => {
-      _options.Colors = await res.json()
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+  try {
+    getColors().then((colors) => (_options.Colors = colors))
+  } catch (err) {
+    console.error(err)
+  }
 })
 </script>
 

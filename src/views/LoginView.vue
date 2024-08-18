@@ -3,6 +3,7 @@ import { LOGIN_URL } from '@/consts'
 import router from '@/router'
 import { ref } from 'vue'
 import { useFocus } from '@vueuse/core'
+import { login } from '@/lib/api'
 
 const _username = ref('')
 const _password = ref('')
@@ -13,39 +14,12 @@ const _errorText = ref('')
 
 useFocus(_userinput, { initialValue: true })
 
-async function login() {
-  try {
-    const response = await fetch(LOGIN_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        username: _username.value,
-        password: _password.value
-      }),
-      credentials: 'include' // Used to set coockies; DOTO Check if this should be in production
+async function _login() {
+  login(_username.value, _password.value)
+    .then(() => router.push({ name: 'home' }))
+    .catch((err) => {
+      console.error(err)
     })
-    _password.value = '' // Reset password
-
-    if (response.ok) {
-      router.push('/') // Redirect to home after successful login
-    } else {
-      _errorText.value = await response.text()
-      switch (response.status) {
-        case 400: {
-          throw new Error(_errorText.value)
-        }
-        case 404: {
-          throw new Error(_errorText.value)
-        }
-        case 500: {
-          throw new Error(_errorText.value)
-        }
-        default:
-          break
-      }
-    }
-  } catch (error) {
-    console.error(error)
-  }
 }
 </script>
 
@@ -60,7 +34,7 @@ async function login() {
   </div>
   <div class="grid h-full">
     <div class="w-96 place-self-center rounded-lg border bg-white p-5 shadow-lg">
-      <form class="mt-5" @submit.prevent="login()">
+      <form class="mt-5" @submit.prevent="_login()">
         <div class="mt-5 w-full">
           <input
             id="username"

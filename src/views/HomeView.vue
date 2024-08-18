@@ -2,12 +2,10 @@
 import NotesList from '@/components/NotesList.vue'
 import NoteAdd from '@/components/NoteAdd.vue'
 import TodoStats from '@/components/TodoStats.vue'
-import { onClickOutside } from '@vueuse/core'
-import { onMounted, ref } from 'vue'
-import { NOTES_URL } from '@/consts'
 import type { Options, Todo } from '@/types'
-import { computed } from 'vue'
-import { inject } from 'vue'
+import { onClickOutside } from '@vueuse/core'
+import { onMounted, ref, computed, inject } from 'vue'
+import { addTodo, deleteTodo, fetchNotes, updateTodo } from '@/lib/api'
 
 const _notes = ref<Todo[]>([])
 const __addNote = ref<boolean>(false)
@@ -15,58 +13,30 @@ const __addNote = ref<boolean>(false)
 const __addNote_ref = ref<HTMLElement | null>(null)
 onClickOutside(__addNote_ref, () => (__addNote.value = false))
 
-async function fetchNotes() {
-  try {
-    const response = await fetch(NOTES_URL, {
-      credentials: 'include'
-    })
-    if (!response.ok) {
-      throw new Error('Could not fetch notes')
-    }
-    _notes.value = (await response.json()) as Todo[]
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-function updateTodo(todo: Todo) {
-  fetch(NOTES_URL + '/' + todo.ID, {
-    method: 'PUT',
-    credentials: 'include',
-    body: JSON.stringify(todo)
-  })
+function _updateTodo(todo: Todo) {
+  updateTodo(todo)
     .then(() => {
-      fetchNotes()
+      fetchNotes().then((notes) => (_notes.value = notes))
     })
     .catch((error) => {
       console.error(error)
     })
 }
 
-function deleteTodo(id: number) {
-  fetch(NOTES_URL + '/' + id, {
-    method: 'DELETE',
-    credentials: 'include'
-  })
+function _deleteTodo(id: number) {
+  deleteTodo(id)
     .then(() => {
-      fetchNotes()
+      fetchNotes().then((notes) => (_notes.value = notes))
     })
     .catch((error) => {
       console.error(error)
     })
 }
 
-function addNote(note: Todo) {
-  fetch(NOTES_URL, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(note)
-  })
+function _addNote(todo: Todo) {
+  addTodo(todo)
     .then(() => {
-      fetchNotes()
+      fetchNotes().then((notes) => (_notes.value = notes))
     })
     .catch((error) => {
       console.error(error)
@@ -114,9 +84,9 @@ function filterTodos(s: number) {
 //  }
 //}
 //
-onMounted(async () => {
+onMounted(() => {
   //  window.addEventListener('keypress', keyboardListener)
-  fetchNotes()
+  fetchNotes().then((notes) => (_notes.value = notes))
 })
 //
 //onBeforeUnmount(() => {
@@ -129,8 +99,8 @@ onMounted(async () => {
     <div class="flex w-1/2 flex-col">
       <NotesList
         :notes="_actual_todos"
-        @updateTodo="updateTodo"
-        @deleteTodo="deleteTodo"
+        @updateTodo="_updateTodo"
+        @deleteTodo="_deleteTodo"
         class=""
       />
     </div>
@@ -149,7 +119,7 @@ onMounted(async () => {
     </div>
   </div>
   <NoteAdd
-    @addModifyNote="addNote"
+    @addModifyNote="_addNote"
     @close="__addNote = false"
     v-if="__addNote"
     ref="__addNote_ref"

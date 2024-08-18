@@ -1,26 +1,21 @@
 <script setup lang="ts">
+import UserPorfile from '@/components/User/UserProfile.vue'
 import { onMounted, ref } from 'vue'
-import { LOGIN_URL } from '@/consts'
 import type { User } from '@/types'
+import { getCurrentUser } from '@/lib/api'
 
-const _user = ref<User>()
+const _user = ref<User>({} as User)
 
 onMounted(() => {
-  fetch(LOGIN_URL, {
-    credentials: 'include'
-  })
-    .then(async (res) => {
-      _user.value = (await res.json()) as User
-    })
-    .catch((error) => {
-      console.error(error)
-    })
+  getCurrentUser().then((u) => (_user.value = u))
 })
 </script>
 
 <template>
-  <div>
-    {{ _user }}
+  <div class="flex justify-center">
+    <div class="mt-5 w-1/2">
+      <UserPorfile :user="_user" />
+    </div>
   </div>
 </template>
 

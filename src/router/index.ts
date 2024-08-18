@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import { LOGIN_URL } from '@/consts'
+import { getCurrentUser, isLoggedIn } from '@/lib/api'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,15 +14,32 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: () => import('../views/LoginView.vue')
     },
     {
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue')
+    },
+    {
+      path: '/admin',
+      children: [
+        {
+          path: '',
+          name: 'admin',
+          component: () => import('../views/AdminView.vue')
+        },
+        {
+          path: 'users',
+          name: 'users',
+          component: () => import('../views/AdminUsersView.vue')
+        },
+        {
+          path: 'users/:id',
+          name: 'user_details',
+          component: () => import('../views/AdminUserDetailsView.vue')
+        }
+      ]
     }
   ]
 })
@@ -33,18 +51,12 @@ router.beforeEach(async (to) => {
   // Probably should use the Pinia authStore
   if (authRequired) {
     try {
-      const response = await fetch(LOGIN_URL, {
-        credentials: 'include' // Used to send cookies; DOTO Check if this should be in production
-      })
-      if (!response.ok) {
-        if (response.status == 401) {
-          return '/login'
-        } else {
-          throw new Error(`Response status: ${response.status}`)
-        }
+      const logged = await isLoggedIn()
+      if (!logged) {
+        return '/login'
       }
-    } catch (error) {
-      console.error(error)
+    } catch (err) {
+      console.error(err)
     }
   }
 })
