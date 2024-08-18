@@ -1,0 +1,33 @@
+name: Formatting
+
+on:
+  push
+
+jobs:
+  vue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+
+      - name: Install prettier
+        run: npm install --save-dev --save-exact prettier
+
+      - name: Check formatting
+        run: npx prettier --check src/
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup go
+        uses: actions/setup-go@v5
+
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+
+      - name: Check formatting
+        run: test -z $(gofmt -l ./cmd)
