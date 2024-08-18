@@ -1,0 +1,22 @@
+<script setup lang="ts">
+import UserPorfile from '@/components/User/UserProfile.vue'
+import { onMounted, ref } from 'vue'
+import type { User } from '@/types'
+import { getCurrentUser } from '@/lib/api'
+
+const _user = ref<User>({} as User)
+
+onMounted(() => {
+  getCurrentUser().then((u) => (_user.value = u))
+})
+</script>
+
+<template>
+  <div class="flex justify-center">
+    <div class="mt-5 w-1/2">
+      <UserPorfile :user="_user" />
+    </div>
+  </div>
+</template>
+
+<style></style>

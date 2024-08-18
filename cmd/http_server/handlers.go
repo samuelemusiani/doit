@@ -70,16 +70,21 @@ func notesHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) {
 		return
 	}
 
-	b_notes, err := json.Marshal(notes)
-	if err != nil {
-		slog.With("err", err).Error("While parsing notes for json")
-		http.Error(w, "Could not get notes", http.StatusInternalServerError)
-		return
+	var response []byte
+	if len(notes) == 0 {
+		response = []byte("[]")
+	} else {
+		response, err = json.Marshal(notes)
+		if err != nil {
+			slog.With("err", err).Error("While parsing notes for json")
+			http.Error(w, "Could not get notes", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(b_notes)
+	w.Write(response)
 }
 
 func notesHandlerPOST(w http.ResponseWriter, r *http.Request, userID int64) {
@@ -123,7 +128,7 @@ func notesHandlerPOST(w http.ResponseWriter, r *http.Request, userID int64) {
 
 func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
-		w.Header().Set("Allow", "GET OPTIONS DELETE")
+		w.Header().Set("Allow", "GET OPTIONS PUT DELETE")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte{})
 		return
@@ -161,6 +166,8 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 		singleNoteHandlerGET(w, r, id, s.userID)
 	case http.MethodDelete:
 		singleNoteHandlerDELETE(w, r, id, s.userID)
+	case http.MethodPut:
+		singleNoteHandlerPUT(w, r, id, s.userID)
 	default:
 		slog.With("method", r.Method).Error("Method not valid. How did we get here?")
 		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
@@ -197,6 +204,40 @@ func singleNoteHandlerGET(w http.ResponseWriter, r *http.Request, noteID int64, 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jnote)
+}
+
+func singleNoteHandlerPUT(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		slog.With("err", err).Error("Reading body")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	var note doit.Note
+	err = json.Unmarshal(body, &note)
+	if err != nil {
+		http.Error(w, "Could not unmarshal body", http.StatusBadRequest)
+		return
+	}
+
+	note.UserID = userID
+
+	newNote, err := db.UpdateNote(noteID, note, userID)
+	if err != nil {
+		slog.With("err", err).Error("Updating note")
+		http.Error(w, "Could not update note", http.StatusBadRequest)
+		return
+	}
+
+	b, err := json.Marshal(*newNote)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling note update")
+		w.Write([]byte("Note updated, but can't be returned"))
+		return
+	}
+
+	w.Write(b)
 }
 
 func singleNoteHandlerDELETE(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {
@@ -250,7 +291,18 @@ func loginHandlerGET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := db.GetUserByID(s.userID)
-	w.Write([]byte(fmt.Sprintf("Logged in as user %s with id %d", user.Username, user.ID)))
+	if err != nil {
+		http.Error(w, "Could not get user", http.StatusInternalServerError)
+		return
+	}
+
+	userResp := doit.UserToResponse(user)
+	b, err := json.Marshal(*userResp)
+	if err != nil {
+		http.Error(w, "Could not marshal user response", http.StatusInternalServerError)
+		return
+	}
+	w.Write(b)
 	return
 }
 
@@ -384,11 +436,16 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		usersResponse[i] = *doit.UserToResponse(&users[i])
 	}
 
-	res, err := json.Marshal(usersResponse)
-	if err != nil {
-		slog.With("err", err).Error("Marshaling users for response")
-		http.Error(w, "", http.StatusInternalServerError)
-		return
+	var res []byte
+	if len(usersResponse) == 0 {
+		res = []byte("[]")
+	} else {
+		res, err = json.Marshal(usersResponse)
+		if err != nil {
+			slog.With("err", err).Error("Marshaling users for response")
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Write(res)
@@ -584,4 +641,55 @@ func singleUserHandlerDELETE(w http.ResponseWriter, r *http.Request, userID int6
 	}
 
 	w.Write([]byte("User deleted successfuly"))
+}
+
+func noteStatesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	b, err := json.Marshal(doit.States)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling notes states")
+		http.Error(w, "Could not get states", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
+}
+
+func notePrioritiesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	b, err := json.Marshal(doit.Priorities)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling notes priorities")
+		http.Error(w, "Could not get states", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
+}
+
+func noteColorsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Allow", "GET OPTIONS")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	b, err := json.Marshal(doit.Colors)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling notes colors")
+		http.Error(w, "Could not get states", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
 }

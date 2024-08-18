@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/samuelemusiani/doit/cmd/config"
 	"github.com/samuelemusiani/doit/cmd/doit"
@@ -53,6 +54,13 @@ func newNote() doit.Note {
 	return doit.Note{
 		Title:       randString(10),
 		Description: randString(250),
+		StateID:     1,
+		PriorityID:  1,
+		ColorID:     1,
+		Expiration: doit.Expiration{
+			DoesExpire: true,
+			Date:       time.Now().Add(time.Hour).Round(time.Second),
+		},
 	}
 }
 
@@ -334,6 +342,25 @@ func TestGetNoteById(t *testing.T) {
 	assert.NilError(t, err)
 }
 
+func TestUpdateNoteByID(t *testing.T) {
+	err := setup()
+	assert.NilError(t, err)
+
+	user, err := createAndInsertUser()
+	assert.NilError(t, err)
+
+	note, err := createAndInsertNote(user.ID)
+	assert.NilError(t, err)
+
+	newNote := newNote()
+	newNote.ID = note.ID
+	newNote.UserID = note.UserID
+
+	modNote, err := UpdateNote(note.ID, newNote, note.UserID)
+	assert.NilError(t, err)
+	assert.Equal(t, *modNote, newNote)
+}
+
 func TestDeleteNoteByID(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
@@ -406,6 +433,14 @@ func TestDeleteNotesByUserID(t *testing.T) {
 	dbNotes, err := AllNotes(userID)
 	assert.NilError(t, err)
 	assert.Check(t, len(dbNotes) == 0)
+
+	err = cleanup()
+	assert.NilError(t, err)
+}
+
+func TestInsertNoteStates(t *testing.T) {
+	err := setup()
+	assert.NilError(t, err)
 
 	err = cleanup()
 	assert.NilError(t, err)

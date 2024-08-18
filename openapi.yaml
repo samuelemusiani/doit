@@ -66,7 +66,7 @@ paths:
           format: int64
           minimum: 1
     get:
-      summary: Returna note by ID
+      summary: Return note by ID
       description: Return the note that match the ID.
       tags:
         - notes
@@ -82,6 +82,23 @@ paths:
           description: When ID is not an integer
         '404':
           description: Could not find note in DB for the current user
+        '500':
+          description: Internal server error
+
+    put:
+      summary: Update note by ID
+      description: Update all note by ID
+      tags:
+        - notes
+      responses:
+        '200':
+          description: PUT successful
+        '400':
+          description: PUT not successful, format error
+        '401':
+          description: Not authenticated, cannot get user
+        '403':
+          description: Authenticated but lacks of permission
         '500':
           description: Internal server error
     
@@ -233,6 +250,19 @@ components:
           type: string
         description:
           type: string
+        stateID:
+          type: integer
+        prioriyID:
+          type: integer
+        colorID:
+          type: integer
+        expiration:
+          type: object
+          properties:
+            DoesExpire:
+              type: boolean
+            Date:
+              type: string
     User:
       type: object
       properties:
