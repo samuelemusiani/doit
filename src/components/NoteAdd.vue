@@ -214,7 +214,11 @@ onBeforeUnmount(() => {
 
         <div class="mt-5 flex justify-around">
           <button @click="close()" class="rounded bg-red-200 p-2 hover:bg-red-400">Close</button>
-          <button @click="deleteTodo()" class="rounded bg-red-500 p-2 hover:bg-red-800">
+          <button
+            @click="deleteTodo()"
+            v-if="$props.modify"
+            class="rounded bg-red-500 p-2 hover:bg-red-800"
+          >
             DELETE
           </button>
           <button @click="addModifyNote()" class="rounded bg-blue-200 p-2 hover:bg-blue-400">
