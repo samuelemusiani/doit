@@ -18,8 +18,13 @@ type Log struct {
 	Log_level string
 }
 
+type FirstUser struct {
+	Username string
+	Email    string
+}
+
 type Users struct {
-	First_User string
+	First_User FirstUser
 }
 
 type Config struct {
@@ -40,7 +45,10 @@ var config Config = Config{
 		Log_level: "info",
 	},
 	Users: Users{
-		First_User: "admin",
+		First_User: FirstUser{
+			Username: "admin",
+			Email:    "admin@mail.com",
+		},
 	},
 }
 

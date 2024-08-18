@@ -129,3 +129,40 @@ func NoteToResponse(n *Note) *NoteResponse {
 		Description: n.Description,
 	}
 }
+
+func UserUnmarshalingToUser(n *UserUnmarshaling) *User {
+	var u User
+	if n.ID != nil {
+		u.ID = *n.ID
+	}
+
+	if n.Username != nil {
+		u.Username = *n.Username
+	}
+
+	if n.Email != nil {
+		u.Email = *n.Email
+	}
+
+	if n.Name != nil {
+		u.Name = *n.Name
+	}
+
+	if n.Surname != nil {
+		u.Surname = *n.Surname
+	}
+
+	if n.Admin != nil {
+		u.Admin = *n.Admin
+	}
+
+	if n.Active != nil {
+		u.Active = *n.Active
+	}
+
+	if n.Password != nil {
+		u.Password = *n.Password
+	}
+
+	return &u
+}

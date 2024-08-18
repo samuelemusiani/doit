@@ -139,6 +139,28 @@ paths:
         '500':
           description: Internal server error
 
+    post:
+      summary: Create user
+      description: Create a new user. Only admins can do this
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schema/User'
+
+      responses:
+        '201':
+          description: User created successfully
+        
+        '400':
+          description: Bad request. Note was malformed
+
+        '500':
+          description: Internal server error
+
 
   /api/users/{id}:
     parameters:

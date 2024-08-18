@@ -121,12 +121,12 @@ func fillDB() error {
 	return nil
 }
 
-func generateDefaultAdmin(user string) error {
+func generateDefaultAdmin(user config.FirstUser) error {
 	u, err := global_db.getInternal("first_user")
 	// User found
 	if err == nil {
 		// We check if config has changed, just to notify :)
-		if string(u) != user {
+		if string(u) != user.Username {
 			slog.With("current_user", string(u), "new_user", user).Warn("Default user is changed in config but already present in DB. Can't do anything")
 		}
 		return nil
@@ -145,7 +145,8 @@ func generateDefaultAdmin(user string) error {
 	}
 
 	new_user := doit.User{
-		Username: user,
+		Username: user.Username,
+		Email:    user.Email,
 		Password: string(passwd),
 		Admin:    true,
 		Active:   true,
@@ -156,7 +157,7 @@ func generateDefaultAdmin(user string) error {
 		return err
 	}
 
-	err = global_db.addInternal("first_user", []byte(user))
+	err = global_db.addInternal("first_user", []byte(user.Username))
 	if err != nil {
 		return err
 	}

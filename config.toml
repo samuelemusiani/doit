@@ -8,6 +8,9 @@ path = "./doit.db"
 log_level = "debug" # debug, info, warn, error
 
 [ users ]
+
+[ users.first_user ]
 # When DOIT is started for the first time the following user is created and the
 # password is randomly generated and printend on the console.
-first_user = "samu"
+username = "samu"
+email = "samu@mail.com"

@@ -402,7 +402,7 @@ func loginHandlerDELETE(w http.ResponseWriter, r *http.Request) {
 
 func usersHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
-		w.Header().Set("Allow", "GET OPTIONS")
+		w.Header().Set("Allow", "GET POST OPTIONS")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -424,6 +424,17 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	switch r.Method {
+	case http.MethodGet:
+		usersHandlerGET(w, r)
+	case http.MethodPost:
+		usersHandlerPOST(w, r)
+	}
+
+	return
+}
+
+func usersHandlerGET(w http.ResponseWriter, r *http.Request) {
 	users, err := db.AllUsers()
 	if err != nil {
 		slog.With("err", err).Error("Gettin users from DB")
@@ -450,6 +461,65 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(res)
 	return
+}
+
+func usersHandlerPOST(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		slog.With("err", err).Error("Could not read body of a request")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	var u_user doit.UserUnmarshaling
+	err = json.Unmarshal(body, &u_user)
+	if err != nil {
+		slog.With("err", err).Error("Unmarshaling body")
+		http.Error(w, "Could not unmarshal body", http.StatusBadRequest)
+		return
+	}
+
+	if u_user.Username == nil || u_user.Password == nil || u_user.Email == nil {
+		http.Error(w, "Username, password or email are not present", http.StatusBadRequest)
+		return
+	}
+
+	user := doit.UserUnmarshalingToUser(&u_user)
+
+	pw := user.Password
+	h, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrPasswordTooLong) {
+			http.Error(w, "Password too long (> 72 bytes)", http.StatusBadRequest)
+		} else {
+			slog.With("err", err).Error("Generating hash from password")
+			http.Error(w, "", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	user.Password = string(h)
+
+	new_user, err := db.CreateUser(*user)
+	if err != nil {
+		if errors.Is(err, db.ErrDuplicate) {
+			http.Error(w, "User already present", http.StatusBadRequest)
+		} else {
+			slog.With("err", err).Error("Inserting new user into db")
+			http.Error(w, "", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	user_res := doit.UserToResponse(new_user)
+	res, err := json.Marshal(user_res)
+	if err != nil {
+		slog.With("err", err).Error("Marshaling update user")
+		w.Write([]byte("User created, but can't be returned"))
+		return
+	}
+
+	w.Write(res)
 }
 
 func singleUserHandler(w http.ResponseWriter, r *http.Request) {
