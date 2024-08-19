@@ -21,7 +21,7 @@ onMounted(() => {
   </div>
   <div class="flex justify-center">
     <div class="w-1/3">
-      <UserPorfile :user="_user" />
+      <UserPorfile :user="_user" v-if="_user.ID" />
     </div>
   </div>
 </template>
