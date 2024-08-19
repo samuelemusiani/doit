@@ -212,6 +212,24 @@ export async function addUser(user: User): Promise<User> {
     })
 }
 
+export async function deleteUser(id: number): Promise<string> {
+  return fetch(USERS_URL + `/${id}`, {
+    method: 'DELETE',
+    credentials: 'include'
+  })
+    .then(async (res) => {
+      let t = await res.text()
+      if (!res.ok) {
+        throw new Error(t)
+      }
+
+      return t
+    })
+    .catch((err) => {
+      throw new Error(`Could not delete user: ${err}`)
+    })
+}
+
 export async function isLoggedIn(): Promise<boolean> {
   return fetch(LOGIN_URL, {
     credentials: 'include'

@@ -35,6 +35,11 @@ function reset() {
 }
 
 function closeModal(accept: boolean = false) {
+  if (!$props.component) {
+    accept ? $modals.accept() : $modals.reject()
+    return
+  }
+
   if (accept) {
     _tried_submitted.value = true
 
@@ -59,11 +64,13 @@ function closeModal(accept: boolean = false) {
 
         <main class="my-5">
           <component
+            v-if="$props.component"
             :is="$props.component"
             v-model:data="_data"
             v-model:ok="_can_submit"
             :tried_submitted="_tried_submitted"
           />
+          <slot> </slot>
         </main>
 
         <footer class="flex justify-evenly">

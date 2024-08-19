@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { modifyUser } from '@/lib/api'
+import { deleteUser, modifyUser } from '@/lib/api'
 import type { User } from '@/types'
 import type { PropType } from 'vue'
+import { inject } from 'vue'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const $props = defineProps({
   user: {
@@ -10,6 +12,8 @@ const $props = defineProps({
     required: true
   }
 })
+
+const $router = useRouter()
 
 const _modify = ref<boolean>(false)
 const _error = ref<string>('')
@@ -60,6 +64,24 @@ function done() {
 }
 
 userToRefs($props.user)
+
+const $modals = inject('$modals') as any
+function _deleteUser() {
+  $modals.show('deletePrompt').then(
+    () => {
+      deleteUser($props.user.ID)
+        .then(() => {
+          $router.go(-1)
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    },
+    () => {
+      // Rejected
+    }
+  )
+}
 </script>
 
 <template>
@@ -70,6 +92,13 @@ userToRefs($props.user)
       </div>
       <button class="rounded border p-2 hover:bg-gray-100" @click="_modify = true" v-if="!_modify">
         Modify
+      </button>
+      <button
+        class="rounded border bg-red-500 p-2 hover:bg-red-600"
+        @click="_deleteUser"
+        v-if="_modify"
+      >
+        DELETE
       </button>
     </div>
     <form @submit.prevent="">
@@ -156,7 +185,28 @@ userToRefs($props.user)
       </div>
       <div v-if="_modify && _error.length > 0" class="p-2 text-red-600">Error: {{ _error }}</div>
     </form>
+
+    <Transition>
+      <Modal
+        name="deletePrompt"
+        title="Delete user"
+        accept_button="DELETE"
+        class="absolute left-0 top-0 h-full w-full"
+      >
+        Do you really want to delete the user?
+      </Modal>
+    </Transition>
   </div>
 </template>
 
-<style></style>
+<style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.1s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+</style>
