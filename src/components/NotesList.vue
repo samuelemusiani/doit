@@ -111,6 +111,9 @@ function closeModify() {
         </div>
       </div>
     </template>
+    <div v-if="notes.length == 0" class="text-gray-800">
+      Looks like theres is nothing to do... :)
+    </div>
   </div>
 </template>
 
