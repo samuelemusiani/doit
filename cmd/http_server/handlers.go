@@ -620,14 +620,15 @@ func singleUserHandlerPUT(w http.ResponseWriter, r *http.Request, userID int64, 
 	}
 
 	var updateRequested doit.UserUnmarshaling
-	err = json.Unmarshal(body, &author)
+	err = json.Unmarshal(body, &updateRequested)
 	if err != nil {
 		slog.With("err", err).Error("Unmarshaling body")
 		http.Error(w, "Could not unmarshal body", http.StatusBadRequest)
 		return
 	}
 
-	if updateRequested.Username != nil {
+	if updateRequested.Username != nil &&
+		*updateRequested.Username != originalUser.Username {
 		http.Error(w, "Username is not updatable", http.StatusBadRequest)
 		return
 	}

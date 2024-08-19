@@ -176,7 +176,21 @@ export async function getUser(id: number): Promise<User> {
     })
 }
 
-export function isLoggedIn(): Promise<boolean> {
+export async function modifyUser(user: User): Promise<User> {
+  return fetch(USERS_URL + `/${user.ID}`, {
+    method: 'PUT',
+    credentials: 'include',
+    body: JSON.stringify(user)
+  })
+    .then((res) => {
+      return res.json()
+    })
+    .catch((err) => {
+      throw new Error(`Could not update user: ${err}`)
+    })
+}
+
+export async function isLoggedIn(): Promise<boolean> {
   return fetch(LOGIN_URL, {
     credentials: 'include'
   }).then((res) => {

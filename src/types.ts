@@ -42,4 +42,5 @@ export interface User {
   Surname: string
   Admin: boolean
   Active: boolean
+  Password?: string
 }
