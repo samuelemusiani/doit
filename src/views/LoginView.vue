@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { LOGIN_URL } from '@/consts'
 import router from '@/router'
 import { ref } from 'vue'
 import { useFocus } from '@vueuse/core'
@@ -16,7 +15,9 @@ useFocus(_userinput, { initialValue: true })
 
 async function _login() {
   login(_username.value, _password.value)
-    .then(() => router.push({ name: 'home' }))
+    .then(() => {
+      router.push({ name: 'home' })
+    })
     .catch((err) => {
       _errorText.value = "Something went wrong. Can't login"
       console.error(err)

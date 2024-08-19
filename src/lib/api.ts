@@ -6,11 +6,11 @@ export async function getCurrentUser(): Promise<User> {
   return fetch(LOGIN_URL, {
     credentials: 'include'
   })
-    .then((res) => {
-      return res.json()
-    })
-    .then((user) => {
-      return user as User
+    .then(async (res) => {
+      if (!res.ok) {
+        throw new Error(await res.text())
+      }
+      return (await res.json()) as User
     })
     .catch((err) => {
       throw new Error(`Could not get current user: ${err}`)
@@ -125,8 +125,12 @@ export async function login(user: string, password: string): Promise<any> {
     // Used to set coockies; DOTO Check if this should be in production
     credentials: 'include'
   })
-    .then((res) => {
-      return res.text()
+    .then(async (res) => {
+      let t = await res.text()
+      if (!res.ok) {
+        throw new Error(t)
+      }
+      return t
     })
     .catch((err) => {
       throw new Error(`Could not login: ${err}`)

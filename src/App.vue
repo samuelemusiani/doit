@@ -1,16 +1,11 @@
 <script setup lang="ts">
 import { RouterView, useRoute } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
-import { onMounted, provide, computed } from 'vue'
-import { LOGIN_ENDPOINT } from './consts'
+import { onMounted, provide } from 'vue'
 import type { Options } from './types'
 import { getColors, getPriorities, getStates } from './lib/api'
 
 const $route = useRoute()
-
-const path = computed(() => {
-  return $route.path
-})
 
 const _options = {} as Options
 provide('todoOptions', _options)
@@ -37,7 +32,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <NavBar v-if="path != LOGIN_ENDPOINT" />
+  <NavBar v-if="!$route.meta.hide_navbar" />
   <RouterView />
 </template>
 

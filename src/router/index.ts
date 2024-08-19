@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import { LOGIN_URL } from '@/consts'
-import { getCurrentUser, isLoggedIn } from '@/lib/api'
+import { isLoggedIn } from '@/lib/api'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,7 +13,10 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue')
+      component: () => import('../views/LoginView.vue'),
+      meta: {
+        hide_navbar: true
+      }
     },
     {
       path: '/profile',

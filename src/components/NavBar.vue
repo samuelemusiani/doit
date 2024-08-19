@@ -6,11 +6,11 @@ import { getCurrentUser, logout } from '@/lib/api'
 const _user = ref<User>({} as User)
 
 onMounted(() => {
-  try {
-    getCurrentUser().then((u) => (_user.value = u))
-  } catch (error) {
-    console.log(error)
-  }
+  getCurrentUser()
+    .then((u) => (_user.value = u))
+    .catch((err: Error) => {
+      console.error(err)
+    })
 })
 </script>
 
