@@ -194,6 +194,24 @@ export async function modifyUser(user: User): Promise<User> {
     })
 }
 
+export async function addUser(user: User): Promise<User> {
+  return fetch(USERS_URL, {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(user)
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        throw new Error(await res.text())
+      }
+
+      return await res.json()
+    })
+    .catch((err) => {
+      throw new Error(`Could not create user: ${err}`)
+    })
+}
+
 export async function isLoggedIn(): Promise<boolean> {
   return fetch(LOGIN_URL, {
     credentials: 'include'

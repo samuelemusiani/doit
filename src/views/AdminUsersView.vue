@@ -1,12 +1,40 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import UserAdd from '@/components/User/UserAdd.vue'
+
+import { onMounted, ref, inject, toRaw } from 'vue'
 import type { User } from '@/types'
-import { getUsers } from '@/lib/api'
+import { addUser, getUsers } from '@/lib/api'
 
 const _users = ref<User[]>([])
+const _adding = ref<boolean>(false)
+
+const $modals = inject('$modals') as any
+
+function newUser() {
+  _adding.value = true
+  $modals.show('addUserModal').then(
+    (data: any) => {
+      let user: User = toRaw(data)
+      addUser(user)
+        .then(() => {
+          fetchUsers()
+        })
+        .catch((err) => {
+          console.error(err)
+        })
+    },
+    () => {
+      // Modal rejected
+    }
+  )
+}
+
+function fetchUsers() {
+  getUsers().then((users) => (_users.value = users))
+}
 
 onMounted(() => {
-  getUsers().then((users) => (_users.value = users))
+  fetchUsers()
 })
 </script>
 
@@ -31,6 +59,33 @@ onMounted(() => {
       </div>
     </div>
   </div>
+  <button
+    class="fixed bottom-5 right-5 rounded bg-orange-200 p-5 hover:bg-orange-400"
+    @click="newUser"
+  >
+    Add User
+  </button>
+
+  <Transition>
+    <Modal
+      name="addUserModal"
+      title="Add user"
+      accept_button="Create"
+      :component="UserAdd"
+      class="absolute left-0 top-0 h-full w-full"
+    >
+    </Modal>
+  </Transition>
 </template>
 
-<style></style>
+<style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.1s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+</style>
