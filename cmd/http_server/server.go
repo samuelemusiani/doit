@@ -25,8 +25,12 @@ var NO_AUTH_PATHS = [...]string{
 	"/api/options/colors",
 }
 
+var ui_fs fs.FS
+
 func Init(fs fs.FS) {
 	slog.Debug("Init http server")
+
+	ui_fs = fs
 
 	router = mux.NewRouter()
 	router.HandleFunc("/api", rootAPIHandler).Methods("GET", "OPTIONS")
@@ -40,7 +44,7 @@ func Init(fs fs.FS) {
 	router.HandleFunc("/api/options/priorities", notePrioritiesHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/options/colors", noteColorsHandler).Methods("GET", "OPTIONS")
 
-	router.PathPrefix("/").Handler(http.FileServerFS(fs))
+	router.PathPrefix("/").HandlerFunc(staticHandler)
 
 	router.Use(logginMiddleware)
 	router.Use(authMiddleware)

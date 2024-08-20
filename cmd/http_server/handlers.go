@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
+	"path"
 	"strconv"
 	"time"
 
@@ -17,6 +19,46 @@ import (
 )
 
 const SESSION_COOCKIE_NAME = "ST"
+
+func staticHandler(w http.ResponseWriter, r *http.Request) {
+	p := r.URL.Path[1:]
+	if p == "" || p == "static" || p == "static/" {
+		p = "index.html"
+	}
+
+	f, err := fs.ReadFile(ui_fs, p)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			// If the file does not exists it could be a route that the SPA router
+			// would catch. We serve the index.html instead
+
+			f, err = fs.ReadFile(ui_fs, "index.html")
+			if err != nil {
+				if errors.Is(err, fs.ErrNotExist) {
+					http.Error(w, "", http.StatusNotFound)
+				} else {
+					slog.With("err", err).Error("Reading index.html")
+					http.Error(w, "", http.StatusInternalServerError)
+				}
+				return
+			}
+			w.Header().Set("Content-Type", "text/html")
+			w.Write(f)
+			return
+		}
+		slog.With("path", p, "err", err).Error("Reading file")
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	switch path.Ext(p) {
+	case ".js":
+		w.Header().Set("Content-Type", "text/javascript")
+	case ".css":
+		w.Header().Set("Content-Type", "text/css")
+	}
+	w.Write(f)
+}
 
 func rootAPIHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
