@@ -13,7 +13,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue'),
+      component: () => import('@/views/LoginView.vue'),
       meta: {
         hide_navbar: true
       }
@@ -21,7 +21,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('../views/ProfileView.vue')
+      component: () => import('@/views/ProfileView.vue')
     },
     {
       path: '/admin',
@@ -29,19 +29,24 @@ const router = createRouter({
         {
           path: '',
           name: 'admin',
-          component: () => import('../views/AdminView.vue')
+          component: () => import('@/views/AdminView.vue')
         },
         {
           path: 'users',
           name: 'users',
-          component: () => import('../views/AdminUsersView.vue')
+          component: () => import('@/views/AdminUsersView.vue')
         },
         {
           path: 'users/:id',
           name: 'user_details',
-          component: () => import('../views/AdminUserDetailsView.vue')
+          component: () => import('@/views/AdminUserDetailsView.vue')
         }
       ]
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('@/views/NotFound.vue')
     }
   ]
 })
