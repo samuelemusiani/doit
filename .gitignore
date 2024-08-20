@@ -1,5 +1,6 @@
 *.db
-cmd/_front
+cmd/_front/*
+!cmd/_front/.gitkeep
 doit
 
 # Logs
