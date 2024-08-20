@@ -1,4 +1,4 @@
-export const API_URL = 'http://localhost:8080/api'
+export const API_URL = '/api'
 
 export const LOGIN_ENDPOINT = '/login'
 export const OPTIONS_ENDPOINT = '/options'
