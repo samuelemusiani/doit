@@ -22,7 +22,6 @@ func main() {
 	if err != nil {
 		slog.With("err", err).Error("Error during config reading")
 		slog.With("config", conf).Warn("Using default config values")
-		os.Exit(1)
 	}
 
 	var logLevl slog.Level
