@@ -5,4 +5,5 @@ go: vue
 	go build -o doit ./cmd
 
 vue:
+	npm install
 	npm run build
