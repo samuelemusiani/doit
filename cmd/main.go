@@ -1,6 +1,8 @@
 package main
 
 import (
+	"embed"
+	"io/fs"
 	"log/slog"
 	"os"
 
@@ -9,6 +11,9 @@ import (
 
 	"github.com/samuelemusiani/doit/cmd/http_server"
 )
+
+//go:embed all:_front
+var front_fs embed.FS
 
 func main() {
 	slog.Info("Starting DOIT")
@@ -41,7 +46,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	http_server.Init()
+	front_fs, err := fs.Sub(front_fs, "front")
+	if err != nil {
+		slog.With("err", err).Error("Initializing change base path for front fs")
+		os.Exit(1)
+	}
+
+	http_server.Init(front_fs)
 	err = http_server.ListenAndServe()
 	if err != nil {
 		slog.With("err", err).Error("Listening and serving")

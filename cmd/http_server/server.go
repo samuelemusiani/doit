@@ -3,6 +3,7 @@ package http_server
 import (
 	"context"
 	"errors"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -24,11 +25,10 @@ var NO_AUTH_PATHS = [...]string{
 	"/api/options/colors",
 }
 
-func Init() {
+func Init(fs fs.FS) {
 	slog.Debug("Init http server")
 
 	router = mux.NewRouter()
-	router.HandleFunc("/", rootHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api", rootAPIHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/notes", notesHandler).Methods("GET", "OPTIONS", "POST")
 	router.HandleFunc("/api/notes/{id}", singleNoteHandler).Methods("GET", "OPTIONS", "PUT", "DELETE")
@@ -39,6 +39,8 @@ func Init() {
 	router.HandleFunc("/api/options/states", noteStatesHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/options/priorities", notePrioritiesHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/options/colors", noteColorsHandler).Methods("GET", "OPTIONS")
+
+	router.PathPrefix("/").Handler(http.FileServerFS(fs))
 
 	router.Use(logginMiddleware)
 	router.Use(authMiddleware)

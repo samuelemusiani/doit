@@ -1,4 +1,6 @@
 *.db
+cmd/_front
+doit
 
 # Logs
 logs

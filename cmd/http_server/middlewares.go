@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strings"
 )
 
 func logginMiddleware(next http.Handler) http.Handler {
@@ -18,6 +19,12 @@ func authMiddleware(next http.Handler) http.Handler {
 
 		// I don't like this :(
 		if r.Method == http.MethodOptions {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// For SPA
+		if !strings.HasPrefix(r.URL.Path, "/api") {
 			next.ServeHTTP(w, r)
 			return
 		}

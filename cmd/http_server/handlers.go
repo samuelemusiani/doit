@@ -18,12 +18,6 @@ import (
 
 const SESSION_COOCKIE_NAME = "ST"
 
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
-	return
-}
-
 func rootAPIHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Root APIs endpoint for DOIT"))
