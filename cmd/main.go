@@ -45,7 +45,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	front_fs, err := fs.Sub(front_fs, "front")
+	front_fs, err := fs.Sub(front_fs, "_front")
 	if err != nil {
 		slog.With("err", err).Error("Initializing change base path for front fs")
 		os.Exit(1)
