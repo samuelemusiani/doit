@@ -21,8 +21,5 @@ jobs:
       - name: Install run-all
         run: npm i npm-run-all --save-dev
 
-      - name: Build frontend
-        run: npm run build
-
-      - name: Build backend
-        run: go build -o doit ./cmd
+      - name: Build application
+        run: make
