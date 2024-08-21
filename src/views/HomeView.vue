@@ -91,7 +91,7 @@ const __show_mobile = ref<boolean>(false)
         :notes="_actual_todos"
         @updateTodo="_updateTodo"
         @deleteTodo="_deleteTodo"
-        class=""
+        class="md:min-w-[40rem] md:max-w-[60rem]"
       />
       <div class="flex gap-5 md:ml-5 md:flex-col">
         <TodoStats class="hidden md:block" :todos="_notes" @selected="filterTodos" />
