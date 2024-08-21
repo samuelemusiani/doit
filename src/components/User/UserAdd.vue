@@ -45,7 +45,7 @@ function validate(): { isValid: Boolean; err: string } {
 </script>
 
 <template>
-  <div class="w-96">
+  <div class="md:min-w-96">
     <form @submit.prevent="">
       <div class="*:p-2">
         <div>

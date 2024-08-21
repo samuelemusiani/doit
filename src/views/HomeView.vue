@@ -76,60 +76,64 @@ function filterTodos(s: number) {
   _filter_state.value = s
 }
 
-// For now this does not work because if we use need to type 'a' in a nested
-// component the function will fire anyway
-//function keyboardListener(event: KeyboardEvent) {
-//  if (event.key == 'a') {
-//    __addNote.value = true
-//  }
-//}
-//
 onMounted(() => {
-  //  window.addEventListener('keypress', keyboardListener)
   fetchNotes().then((notes) => (_notes.value = notes))
 })
-//
-//onBeforeUnmount(() => {
-//  window.removeEventListener('keypress', keyboardListener)
-//})
+
+// Responsive
+const __show_mobile = ref<boolean>(false)
 </script>
 
 <template>
-  <div class="mt-2 flex justify-center">
-    <div class="flex w-1/2 flex-col">
+  <div class="p-2">
+    <div class="flex flex-col-reverse md:flex-row md:justify-center">
       <NotesList
         :notes="_actual_todos"
         @updateTodo="_updateTodo"
         @deleteTodo="_deleteTodo"
         class=""
       />
-    </div>
-    <div class="ml-5 mt-2">
-      <div class="">
-        <TodoStats :todos="_notes" @selected="filterTodos" />
-      </div>
-      <div class="mt-5">
+      <div class="flex gap-5 md:ml-5 md:flex-col">
+        <TodoStats class="hidden md:block" :todos="_notes" @selected="filterTodos" />
+        <button
+          class="rounded bg-orange-200 p-2 shadow md:hidden"
+          @click="__show_mobile = !__show_mobile"
+        >
+          Filter
+        </button>
+        <TodoStats
+          :class="{ hidden: !__show_mobile }"
+          class="w-full md:hidden"
+          :todos="_notes"
+          @selected="filterTodos"
+        />
+
         <input
+          :class="{ hidden: __show_mobile }"
           type="text"
           v-model="_filter_search"
-          class="rounded border p-2 outline-none"
+          class="w-full rounded border p-2 outline-none md:block"
           placeholder="search..."
         />
+        <button :class="{ hidden: __show_mobile }" class="rounded border p-2 md:hidden">
+          Search
+        </button>
       </div>
     </div>
+    <NoteAdd
+      @addModifyNote="_addNote"
+      @close="__addNote = false"
+      v-if="__addNote"
+      ref="__addNote_ref"
+      class="z-10"
+    />
+    <button
+      class="fixed bottom-5 right-5 rounded bg-sky-200 p-5 shadow hover:bg-sky-400"
+      @click="__addNote = true"
+    >
+      Add Todo
+    </button>
   </div>
-  <NoteAdd
-    @addModifyNote="_addNote"
-    @close="__addNote = false"
-    v-if="__addNote"
-    ref="__addNote_ref"
-  />
-  <button
-    class="fixed bottom-5 right-5 rounded bg-blue-200 p-5 hover:bg-blue-400"
-    @click="__addNote = true"
-  >
-    Add Todo
-  </button>
 </template>
 
 <style></style>

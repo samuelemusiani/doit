@@ -16,13 +16,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="ml-5 mt-5">
-    <button class="rounded border p-2 hover:bg-gray-100" @click="$router.go(-1)">Go back</button>
-  </div>
-  <div class="flex justify-center">
-    <div class="w-1/3">
-      <UserPorfile :user="_user" v-if="_user.ID" />
-    </div>
+  <div class="flex justify-center p-2">
+    <UserPorfile :user="_user" v-if="_user.ID" />
   </div>
 </template>
 

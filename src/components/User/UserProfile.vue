@@ -85,7 +85,7 @@ function _deleteUser() {
 </script>
 
 <template>
-  <div class="rounded border p-5">
+  <div class="rounded border p-5 md:min-w-[30rem]">
     <div class="flex justify-between border-b pb-5">
       <div class="flex items-center">
         <h1 class="font-bol text-2xl">Profile</h1>
@@ -110,7 +110,7 @@ function _deleteUser() {
             id="username"
             v-model="_username"
             disabled
-            class="rounded p-2 outline-none enabled:border"
+            class="rounded outline-none enabled:border enabled:p-2"
           />
         </div>
         <div v-if="_modify">
@@ -130,7 +130,7 @@ function _deleteUser() {
             id="email"
             v-model="_email"
             :disabled="!_modify"
-            class="rounded p-2 outline-none enabled:border"
+            class="rounded outline-none enabled:border enabled:p-2"
           />
         </div>
         <div>
@@ -140,7 +140,7 @@ function _deleteUser() {
             id="name"
             v-model="_name"
             :disabled="!_modify"
-            class="rounded p-2 outline-none enabled:border"
+            class="rounded outline-none enabled:border enabled:p-2"
           />
         </div>
         <div>
@@ -150,7 +150,7 @@ function _deleteUser() {
             id="surname"
             v-model="_surname"
             :disabled="!_modify"
-            class="rounded p-2 outline-none enabled:border"
+            class="rounded outline-none enabled:border enabled:p-2"
           />
         </div>
         <div v-if="$props.user.Admin">
@@ -160,7 +160,7 @@ function _deleteUser() {
             id="admin"
             v-model="_admin"
             :disabled="!_modify"
-            class="rounded p-2 outline-none enabled:border"
+            class="rounded outline-none enabled:border enabled:p-2"
           />
         </div>
 
@@ -171,7 +171,7 @@ function _deleteUser() {
             id="active"
             v-model="_active"
             :disabled="!_modify"
-            class="rounded p-2 outline-none enabled:border"
+            class="rounded outline-none enabled:border enabled:p-2"
           />
         </div>
       </div>

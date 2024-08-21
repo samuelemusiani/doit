@@ -33,10 +33,10 @@ function select(n: number) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-1">
+  <div class="flex flex-row flex-wrap gap-1">
     <template v-for="state in _todo_options.States">
       <div
-        class="flex w-52 items-center justify-between rounded border p-2 hover:bg-gray-100"
+        class="flex min-w-36 items-center justify-between rounded border p-2 hover:bg-gray-100"
         :class="{ 'bg-gray-100': _selected == state.ID }"
         @click="select(state.ID)"
       >

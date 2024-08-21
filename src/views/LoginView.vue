@@ -28,16 +28,23 @@ async function _login() {
 </script>
 
 <template>
+  <!-- Desktop -->
   <div
-    class="absolute top-0 -z-10 hidden h-full w-full items-center font-mono text-[20rem] text-gray-100 opacity-60 lg:flex lg:text-[24rem] xl:text-[32rem] 2xl:text-[40rem]"
+    class="absolute top-0 -z-10 hidden h-full w-full items-center justify-between font-mono text-[20rem] text-gray-100 opacity-60 md:flex lg:flex lg:text-[24rem] xl:text-[32rem] 2xl:text-[40rem]"
   >
-    <div class="flex w-full justify-between">
-      <div>DO</div>
-      <div>IT</div>
-    </div>
+    <div>DO</div>
+    <div>IT</div>
+  </div>
+
+  <!-- Mobile -->
+  <div
+    class="absolute top-0 -z-10 flex h-screen w-screen flex-col items-center justify-between font-mono text-[16rem] text-gray-100 opacity-60 md:hidden"
+  >
+    <div>DO</div>
+    <div>IT</div>
   </div>
   <div class="grid h-full">
-    <div class="w-96 place-self-center rounded-lg border bg-white p-5 shadow-lg">
+    <div class="place-self-center rounded-lg border bg-white p-5 shadow-lg md:min-w-96">
       <form class="mt-5" @submit.prevent="_login()">
         <div class="mt-5 w-full">
           <input

@@ -79,7 +79,7 @@ function closeModify() {
     />
     <template v-for="note in $props.notes.sort(sortTodos)" :key="note.ID">
       <div
-        class="m-2 flex justify-between rounded border border-black p-5 hover:bg-gray-100"
+        class="my-2 flex justify-between rounded border border-black p-5 hover:bg-gray-100"
         @click="callModify(note)"
       >
         <div class="mr-5 grid items-center">

@@ -39,12 +39,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="ml-5 mt-5">
-    <button class="rounded border p-2 hover:bg-gray-100" @click="$router.go(-1)">Go back</button>
-  </div>
-  <div class="flex justify-center">
-    <div class="w-1/3 rounded border p-5">
-      <div class="mt-2 flex justify-between">
+  <div class="flex justify-center p-2">
+    <div class="w-full max-w-[30rem] rounded border p-5">
+      <div class="mt-2 flex flex-col justify-between md:flex-row">
         <h1 class="text-center font-bold">Users list</h1>
         <div>Total: {{ _users.length }}</div>
       </div>
