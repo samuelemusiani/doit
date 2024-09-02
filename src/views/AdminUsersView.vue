@@ -6,12 +6,10 @@ import type { User } from '@/types'
 import { addUser, getUsers } from '@/lib/api'
 
 const _users = ref<User[]>([])
-const _adding = ref<boolean>(false)
 
 const $modals = inject('$modals') as any
 
 function newUser() {
-  _adding.value = true
   $modals.show('addUserModal').then(
     (data: any) => {
       let user: User = toRaw(data)

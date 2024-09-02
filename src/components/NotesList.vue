@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import NoteAdd from './NoteAdd.vue'
+import NoteViewer from './NoteViewer.vue'
 import type { PropType } from 'vue'
 import type { Options, Todo } from '@/types'
 import { inject, ref } from 'vue'
@@ -21,10 +21,6 @@ const $emits = defineEmits<{
 
 const _todo_to_modify = ref<Todo>()
 const _modify_todo = ref<boolean>()
-const __modify_ref = ref<HTMLElement | null>(null)
-onClickOutside(__modify_ref, () => {
-  closeModify()
-})
 
 function sortTodos(a: Todo, b: Todo) {
   let diff = b.PriorityID - a.PriorityID
@@ -47,7 +43,8 @@ function advanceStateTodo(todo: Todo, negative: boolean) {
 }
 
 function callModify(todo: Todo) {
-  _todo_to_modify.value = todo
+  // deep copy
+  _todo_to_modify.value = JSON.parse(JSON.stringify(todo))
   _modify_todo.value = true
 }
 
@@ -68,14 +65,17 @@ function closeModify() {
 
 <template>
   <div>
-    <NoteAdd
+    <!--
+    <NoteAdd :todo="_todo_to_modify" :modify="true" v-if="_modify_todo" @close="closeModify" @addModifyNote="modifyNote"
+      @deleteTodo="deleteTodo" ref="__modify_ref" />
+-->
+    <NoteViewer
       :todo="_todo_to_modify"
-      :modify="true"
-      v-if="_modify_todo"
+      v-if="_modify_todo && _todo_to_modify"
       @close="closeModify"
-      @addModifyNote="modifyNote"
-      @deleteTodo="deleteTodo"
-      ref="__modify_ref"
+      @modify="modifyNote"
+      @delete="deleteTodo"
+      class="absolute right-0 top-0 h-full w-full"
     />
     <template v-for="note in $props.notes.sort(sortTodos)" :key="note.ID">
       <div

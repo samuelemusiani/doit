@@ -3,15 +3,15 @@ import NotesList from '@/components/NotesList.vue'
 import NoteAdd from '@/components/NoteAdd.vue'
 import TodoStats from '@/components/TodoStats.vue'
 import type { Options, Todo } from '@/types'
-import { onClickOutside } from '@vueuse/core'
 import { onMounted, ref, computed, inject } from 'vue'
 import { addTodo, deleteTodo, fetchNotes, updateTodo } from '@/lib/api'
 
 const _notes = ref<Todo[]>([])
 const __addNote = ref<boolean>(false)
 
-const __addNote_ref = ref<HTMLElement | null>(null)
-onClickOutside(__addNote_ref, () => (__addNote.value = false))
+function newNote() {
+  __addNote.value = true
+}
 
 function _updateTodo(todo: Todo) {
   updateTodo(todo)
@@ -120,20 +120,31 @@ const __show_mobile = ref<boolean>(false)
         </button>
       </div>
     </div>
-    <NoteAdd
-      @addModifyNote="_addNote"
-      @close="__addNote = false"
-      v-if="__addNote"
-      ref="__addNote_ref"
-      class="z-10"
-    />
+    <Transition>
+      <NoteAdd
+        @addTodo="_addNote"
+        @close="__addNote = false"
+        v-if="__addNote"
+        class="absolute left-0 top-0 z-10 h-full w-full"
+      />
+    </Transition>
     <button
       class="fixed bottom-5 right-5 rounded bg-sky-200 p-5 shadow hover:bg-sky-400"
-      @click="__addNote = true"
+      @click="newNote"
     >
       Add Todo
     </button>
   </div>
 </template>
 
-<style></style>
+<style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.1s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+</style>
