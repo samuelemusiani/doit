@@ -15,7 +15,9 @@ const $props = defineProps({
     type: String as PropType<String>,
     required: true
   },
-  component: {}
+  component: {
+    required: false
+  }
 })
 
 const _data = ref<any>({} as any)
