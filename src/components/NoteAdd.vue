@@ -4,8 +4,7 @@ import { ref, inject } from 'vue'
 import { useFocus } from '@vueuse/core'
 
 import ColorPicker from '@/components/ColorPicker.vue'
-import { onMounted } from 'vue'
-import { onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 
 const $emits = defineEmits<{
   (e: 'close'): void
@@ -56,27 +55,27 @@ function close() {
   $emits('close')
 }
 
-function keyboardLIstener(event: KeyboardEvent) {
+function keyboardListener(event: KeyboardEvent) {
   if (event.key == 'Escape') {
     close()
   }
 }
 
 onMounted(() => {
-  window.addEventListener('keyup', keyboardLIstener)
+  window.addEventListener('keyup', keyboardListener)
 })
 onBeforeUnmount(() => {
-  window.removeEventListener('keyup', keyboardLIstener)
+  window.removeEventListener('keyup', keyboardListener)
 })
 </script>
 
 <template>
   <div class="grid bg-gray-200 bg-opacity-30" @click="close()">
     <div
-      class="fixed place-self-center rounded border border-black bg-white md:min-w-[25rem]"
+      class="fixed place-self-center rounded-lg bg-white shadow-2xl md:min-w-[25rem]"
       @click.stop=""
     >
-      <header class="bg-gray-300">
+      <header class="rounded-t-lg bg-gray-300">
         <h1 class="p-4 text-center text-xl font-bold">Add note</h1>
       </header>
 

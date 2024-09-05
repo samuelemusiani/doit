@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Todo, Options } from '@/types'
 import type { PropType } from 'vue'
-import { inject, ref } from 'vue'
+import { inject, ref, onMounted, onBeforeUnmount } from 'vue'
 
 const $props = defineProps({
   todo: {
@@ -23,8 +23,6 @@ const _deleting = ref<boolean>(false)
 
 function close() {
   if (!_deleting.value) {
-    console.log(_deleting.value)
-    console.log('here')
     $emits('close')
   }
 }
@@ -43,12 +41,25 @@ function deleteTodo() {
       _deleting.value = false
     })
 }
+
+function keyboardListener(event: KeyboardEvent) {
+  if (event.key == 'Escape') {
+    close()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keyup', keyboardListener)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('keyup', keyboardListener)
+})
 </script>
 
 <template>
-  <div class="grid bg-black bg-opacity-30" @click="close()">
+  <div class="grid bg-gray-200 bg-opacity-30" @click="close()">
     <div
-      class="fixed place-self-center rounded-lg bg-white md:w-[35rem] md:min-w-[25rem] lg:w-[50rem]"
+      class="fixed place-self-center rounded-lg bg-white shadow-2xl md:w-[35rem] md:min-w-[25rem] lg:w-[50rem]"
       @click.stop=""
     >
       <header class="flex justify-end border-b border-b-gray-400 p-1">
