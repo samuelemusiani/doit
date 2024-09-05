@@ -17,7 +17,7 @@ function update(n: number) {
 
 <template>
   <div>
-    <div class="grid grid-cols-3 gap-4 md:grid-cols-6">
+    <div class="grid grid-cols-3 gap-4">
       <div v-for="color in $props.colors" :key="color.ID" class="rounded-md border border-black">
         <div
           :style="{ 'background-color': color.Hex }"

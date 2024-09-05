@@ -3,6 +3,8 @@ import type { Todo, Options } from '@/types'
 import type { PropType } from 'vue'
 import { inject, ref, onMounted, onBeforeUnmount } from 'vue'
 
+import ColorPicker from '@/components/ColorPicker.vue'
+
 const $props = defineProps({
   todo: {
     type: Object as PropType<Todo>,
@@ -20,9 +22,11 @@ const _todo_options = inject('todoOptions') as Options
 const $modals = inject('$modals') as any
 
 const _deleting = ref<boolean>(false)
+const _modifying = ref<boolean>(false)
 
 function close() {
   if (!_deleting.value) {
+    cancelModify()
     $emits('close')
   }
 }
@@ -40,6 +44,18 @@ function deleteTodo() {
     .finally(() => {
       _deleting.value = false
     })
+}
+
+function startModify() {
+  _modifying.value = true
+}
+
+function cancelModify() {
+  _modifying.value = false
+}
+
+function modify() {
+  $emits('modify', $props.todo)
 }
 
 function keyboardListener(event: KeyboardEvent) {
@@ -63,52 +79,112 @@ onBeforeUnmount(() => {
       @click.stop=""
     >
       <header class="flex justify-end border-b border-b-gray-400 p-1">
-        <button class="h-7 w-7 rounded p-1 hover:bg-gray-200" @click="deleteTodo()">
+        <button
+          class="h-7 w-7 rounded p-1 hover:bg-gray-200"
+          @click="deleteTodo()"
+          v-show="!_modifying"
+        >
           <span class="icon-[mdi--bin] h-5 w-5 text-red-500"></span>
         </button>
 
-        <button class="h-7 w-7 rounded p-1 hover:bg-gray-200" @click="">
+        <button
+          class="h-7 w-7 rounded p-1 hover:bg-gray-200"
+          @click="startModify()"
+          v-show="!_modifying"
+        >
           <span class="icon-[mdi--pencil] h-5 w-5 text-black"></span>
         </button>
+
         <button class="h-7 w-7 rounded p-1 hover:bg-gray-200" @click="close()">
           <span class="icon-[material-symbols--close] h-5 w-5 text-black"></span>
         </button>
       </header>
 
-      <body class="flex justify-between gap-5 p-5">
-        <div>
-          <h1 class="mb-5 pb-2 text-xl font-bold">
-            {{ $props.todo.Title }}
-          </h1>
-
-          <p>
-            {{ $props.todo.Description }}
-          </p>
-        </div>
-
-        <div class="flex min-w-40 flex-col gap-4">
+      <body>
+        <form class="flex flex-col justify-between gap-5 p-5 lg:flex-row">
           <div>
-            <label>State:</label>
-            <div class="font-bold">
-              {{ _todo_options.States[$props.todo.StateID - 1].State }}
+            <div class="mb-5 pb-2">
+              <h1 class="text-xl font-bold" v-if="!_modifying">
+                {{ $props.todo.Title }}
+              </h1>
+              <input
+                v-else
+                class="rounded border p-1 text-xl font-bold"
+                v-model="$props.todo.Title"
+              />
+            </div>
+
+            <p v-if="!_modifying">{{ $props.todo.Description }}</p>
+            <textarea
+              v-else
+              class="h-52 rounded border p-1 lg:min-w-96"
+              v-model="$props.todo.Description"
+            >
+            </textarea>
+          </div>
+
+          <div class="flex min-w-40 flex-col gap-4">
+            <div>
+              <label>State:</label>
+              <div class="font-bold" v-if="!_modifying">
+                {{ _todo_options.States[$props.todo.StateID - 1].State }}
+              </div>
+              <div class="w-full" v-else>
+                <select
+                  v-model="$props.todo.StateID"
+                  class="w-full rounded border border-black bg-white p-2 font-bold"
+                >
+                  <option v-for="state in _todo_options.States" :key="state.ID" :value="state.ID">
+                    {{ state.State }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="">Priority:</label>
+              <div class="font-bold" v-if="!_modifying">
+                {{ _todo_options.Priorities[$props.todo.PriorityID - 1].Priority }}
+              </div>
+              <div class="w-full" v-else>
+                <select
+                  v-model="$props.todo.PriorityID"
+                  class="w-full rounded border border-black bg-white p-2 font-bold"
+                >
+                  <option
+                    v-for="priority in _todo_options.Priorities"
+                    :key="priority.ID"
+                    :value="priority.ID"
+                  >
+                    {{ priority.Priority }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label>Color:</label>
+              <div
+                :style="{ 'background-color': _todo_options.Colors[$props.todo.ColorID - 1].Hex }"
+                class="h-8 rounded"
+                v-if="!_modifying"
+              ></div>
+              <ColorPicker :colors="_todo_options.Colors" v-model="$props.todo.ColorID" v-else />
             </div>
           </div>
-          <div>
-            <label class="">Priority:</label>
-            <div class="font-bold">
-              {{ _todo_options.Priorities[$props.todo.PriorityID - 1].Priority }}
-            </div>
-          </div>
-
-          <div>
-            <label>Color:</label>
-            <div
-              :style="{ 'background-color': _todo_options.Colors[$props.todo.ColorID - 1].Hex }"
-              class="h-8 rounded"
-            ></div>
-          </div>
-        </div>
+        </form>
       </body>
+
+      <footer v-show="_modifying" class="p-2">
+        <div class="flex justify-evenly">
+          <button class="rounded border bg-red-300 p-2 hover:bg-red-500" @click="cancelModify()">
+            Cancel
+          </button>
+
+          <button class="rounded border bg-blue-300 p-2 hover:bg-blue-500" @click="modify()">
+            Modify
+          </button>
+        </div>
+      </footer>
 
       <Transition>
         <Modal
