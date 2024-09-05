@@ -56,7 +56,7 @@ export async function getColors(): Promise<TodoColor[]> {
     })
 }
 
-export async function fetchNotes(): Promise<Todo[]> {
+export async function fetchTodos(): Promise<Todo[]> {
   return fetch(NOTES_URL, {
     credentials: 'include'
   })

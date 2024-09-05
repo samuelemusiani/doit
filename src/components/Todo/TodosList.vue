@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import NoteViewer from './NoteViewer.vue'
+import TodoViewer from './TodoViewer.vue'
 import type { PropType } from 'vue'
 import type { Options, Todo } from '@/types'
 import { inject, ref } from 'vue'
@@ -48,7 +48,7 @@ function callModify(todo: Todo) {
   _modify_todo.value = true
 }
 
-function modifyNote(todo: Todo) {
+function modifyTodo(todo: Todo) {
   $emits('updateTodo', todo)
   _modify_todo.value = false
 }
@@ -66,14 +66,14 @@ function closeModify() {
 <template>
   <div>
     <!--
-    <NoteAdd :todo="_todo_to_modify" :modify="true" v-if="_modify_todo" @close="closeModify" @addModifyNote="modifyNote"
+    <TodoAdd :todo="_todo_to_modify" :modify="true" v-if="_modify_todo" @close="closeModify" @addModifyTodo="modifyTodo"
       @deleteTodo="deleteTodo" ref="__modify_ref" />
 -->
-    <NoteViewer
+    <TodoViewer
       :todo="_todo_to_modify"
       v-if="_modify_todo && _todo_to_modify"
       @close="closeModify"
-      @modify="modifyNote"
+      @modify="modifyTodo"
       @delete="deleteTodo"
       class="absolute right-0 top-0 h-full w-full"
     />

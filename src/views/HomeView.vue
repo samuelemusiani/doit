@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import NotesList from '@/components/NotesList.vue'
-import NoteAdd from '@/components/NoteAdd.vue'
-import TodoStats from '@/components/TodoStats.vue'
+import TodosList from '@/components/Todo/TodosList.vue'
+import TodoAdd from '@/components/Todo/TodoAdd.vue'
+import TodoStats from '@/components/Todo/TodoStats.vue'
 import type { Options, Todo } from '@/types'
 import { onMounted, ref, computed, inject } from 'vue'
-import { addTodo, deleteTodo, fetchNotes, updateTodo } from '@/lib/api'
+import { addTodo, deleteTodo, fetchTodos, updateTodo } from '@/lib/api'
 
 const _notes = ref<Todo[]>([])
-const __addNote = ref<boolean>(false)
+const __addTodo = ref<boolean>(false)
 
-function newNote() {
-  __addNote.value = true
+function newTodo() {
+  __addTodo.value = true
 }
 
 function _updateTodo(todo: Todo) {
   updateTodo(todo)
     .then(() => {
-      fetchNotes().then((notes) => (_notes.value = notes))
+      fetchTodos().then((notes) => (_notes.value = notes))
     })
     .catch((error) => {
       console.error(error)
@@ -26,23 +26,23 @@ function _updateTodo(todo: Todo) {
 function _deleteTodo(id: number) {
   deleteTodo(id)
     .then(() => {
-      fetchNotes().then((notes) => (_notes.value = notes))
+      fetchTodos().then((notes) => (_notes.value = notes))
     })
     .catch((error) => {
       console.error(error)
     })
 }
 
-function _addNote(todo: Todo) {
+function _addTodo(todo: Todo) {
   addTodo(todo)
     .then(() => {
-      fetchNotes().then((notes) => (_notes.value = notes))
+      fetchTodos().then((notes) => (_notes.value = notes))
     })
     .catch((error) => {
       console.error(error)
     })
 
-  __addNote.value = false
+  __addTodo.value = false
 }
 
 const _filter_state = ref<number>(0)
@@ -77,7 +77,7 @@ function filterTodos(s: number) {
 }
 
 onMounted(() => {
-  fetchNotes().then((notes) => (_notes.value = notes))
+  fetchTodos().then((notes) => (_notes.value = notes))
 })
 
 // Responsive
@@ -87,7 +87,7 @@ const __show_mobile = ref<boolean>(false)
 <template>
   <div class="p-2">
     <div class="flex flex-col-reverse md:flex-row md:justify-center">
-      <NotesList
+      <TodosList
         :notes="_actual_todos"
         @updateTodo="_updateTodo"
         @deleteTodo="_deleteTodo"
@@ -121,16 +121,16 @@ const __show_mobile = ref<boolean>(false)
       </div>
     </div>
     <Transition>
-      <NoteAdd
-        @addTodo="_addNote"
-        @close="__addNote = false"
-        v-if="__addNote"
+      <TodoAdd
+        @addTodo="_addTodo"
+        @close="__addTodo = false"
+        v-if="__addTodo"
         class="absolute left-0 top-0 z-10 h-full w-full"
       />
     </Transition>
     <button
       class="fixed bottom-5 right-5 rounded bg-sky-200 p-5 shadow hover:bg-sky-400"
-      @click="newNote"
+      @click="newTodo"
     >
       Add Todo
     </button>
