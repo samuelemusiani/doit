@@ -49,29 +49,29 @@ func Close() error {
 	return err
 }
 
-func CreateNote(note doit.Note) (*doit.Note, error) {
-	return global_db.createNote(note)
+func CreateTodo(note doit.Todo) (*doit.Todo, error) {
+	return global_db.createTodo(note)
 }
 
-func AllNotes(userID int64) ([]doit.Note, error) {
-	return global_db.allNotes(userID)
+func AllTodos(userID int64) ([]doit.Todo, error) {
+	return global_db.allTodos(userID)
 }
 
-func GetNoteByID(id int64) (*doit.Note, error) {
-	return global_db.getNoteByID(id)
+func GetTodoByID(id int64) (*doit.Todo, error) {
+	return global_db.getTodoByID(id)
 }
 
 // Delte note with id noteID only if userID match
-func DeleteNoteByID(noteID int64, userID int64) error {
-	return global_db.deleteNoteByID(noteID, userID)
+func DeleteTodoByID(noteID int64, userID int64) error {
+	return global_db.deleteTodoByID(noteID, userID)
 }
 
-func DeleteNotesByUserID(userID int64) error {
-	return global_db.deleteNotesByUserID(userID)
+func DeleteTodosByUserID(userID int64) error {
+	return global_db.deleteTodosByUserID(userID)
 }
 
-func UpdateNote(noteID int64, note doit.Note, userID int64) (*doit.Note, error) {
-	return global_db.updateNote(noteID, note, userID)
+func UpdateTodo(noteID int64, note doit.Todo, userID int64) (*doit.Todo, error) {
+	return global_db.updateTodo(noteID, note, userID)
 }
 
 func CreateUser(user doit.User) (*doit.User, error) {
@@ -103,17 +103,17 @@ func UpdateUser(id int64, user doit.User) (*doit.User, error) {
 }
 
 func fillDB() error {
-	err := global_db.insertNoteStates(doit.States)
+	err := global_db.insertTodoStates(doit.States)
 	if err != nil {
 		return errors.Join(err, errors.New("Inserting states into db"))
 	}
 
-	err = global_db.insertNotePriorities(doit.Priorities)
+	err = global_db.insertTodoPriorities(doit.Priorities)
 	if err != nil {
 		return errors.Join(err, errors.New("Inserting states into db"))
 	}
 
-	err = global_db.insertNoteColors(doit.Colors)
+	err = global_db.insertTodoColors(doit.Colors)
 	if err != nil {
 		return errors.Join(err, errors.New("Inserting states into db"))
 	}

@@ -4,35 +4,35 @@ import (
 	"time"
 )
 
-type NoteState struct {
+type TodoState struct {
 	ID    int64
 	State string
 }
 
 var (
-	StateToDo       = NoteState{State: "todo"}
-	StateInProgress = NoteState{State: "in progress"}
-	StatePaused     = NoteState{State: "paused"}
-	StateDone       = NoteState{State: "done"}
+	StateToDo       = TodoState{State: "todo"}
+	StateInProgress = TodoState{State: "in progress"}
+	StatePaused     = TodoState{State: "paused"}
+	StateDone       = TodoState{State: "done"}
 )
 
-var States = []*NoteState{&StateToDo, &StateInProgress, &StatePaused, &StateDone}
+var States = []*TodoState{&StateToDo, &StateInProgress, &StatePaused, &StateDone}
 
-type NotePriority struct {
+type TodoPriority struct {
 	ID       int64
 	Priority string
 }
 
 var (
-	PriorityVeryLow  = NotePriority{Priority: "very low"}
-	PriorityLow      = NotePriority{Priority: "low"}
-	PriorityMedium   = NotePriority{Priority: "medium"}
-	PriorityHigh     = NotePriority{Priority: "high"}
-	PriorityVeryHigh = NotePriority{Priority: "very high"}
-	PriorityMax      = NotePriority{Priority: "max"}
+	PriorityVeryLow  = TodoPriority{Priority: "very low"}
+	PriorityLow      = TodoPriority{Priority: "low"}
+	PriorityMedium   = TodoPriority{Priority: "medium"}
+	PriorityHigh     = TodoPriority{Priority: "high"}
+	PriorityVeryHigh = TodoPriority{Priority: "very high"}
+	PriorityMax      = TodoPriority{Priority: "max"}
 )
 
-var Priorities = []*NotePriority{&PriorityVeryLow, &PriorityLow, &PriorityMedium, &PriorityHigh, &PriorityVeryHigh, &PriorityMax}
+var Priorities = []*TodoPriority{&PriorityVeryLow, &PriorityLow, &PriorityMedium, &PriorityHigh, &PriorityVeryHigh, &PriorityMax}
 
 // Hex of the color
 type Color struct {
@@ -56,7 +56,7 @@ type Expiration struct {
 	Date       time.Time
 }
 
-type Note struct {
+type Todo struct {
 	ID          int64
 	Title       string
 	Description string
@@ -67,12 +67,12 @@ type Note struct {
 	UserID      int64
 }
 
-type NoteResponse struct {
+type TodoResponse struct {
 	ID             int64
 	Title          string
 	Description    string
-	State          NoteState
-	Priority       NotePriority
+	State          TodoState
+	Priority       TodoPriority
 	Color          Color
 	ExpirationDate Expiration
 }
@@ -122,8 +122,8 @@ func UserToResponse(u *User) *UserResponse {
 	}
 }
 
-func NoteToResponse(n *Note) *NoteResponse {
-	return &NoteResponse{
+func TodoToResponse(n *Todo) *TodoResponse {
+	return &TodoResponse{
 		ID:          n.ID,
 		Title:       n.Title,
 		Description: n.Description,

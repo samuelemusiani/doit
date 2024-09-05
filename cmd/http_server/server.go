@@ -36,7 +36,7 @@ func Init(fs fs.FS) {
 	router = mux.NewRouter()
 	router.HandleFunc("/api", rootAPIHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/api/notes", notesHandler).Methods("GET", "OPTIONS", "POST")
-	router.HandleFunc("/api/notes/{id}", singleNoteHandler).Methods("GET", "OPTIONS", "PUT", "DELETE")
+	router.HandleFunc("/api/notes/{id}", singleTodoHandler).Methods("GET", "OPTIONS", "PUT", "DELETE")
 	router.HandleFunc("/api/login", loginHandler).Methods("GET", "OPTIONS", "POST", "DELETE")
 	router.HandleFunc("/api/users", usersHandler).Methods("GET", "POST", "OPTIONS")
 	router.HandleFunc("/api/users/{id}", singleUserHandler).Methods("GET", "OPTIONS", "PUT", "DELETE")

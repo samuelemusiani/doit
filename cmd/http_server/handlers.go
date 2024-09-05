@@ -99,7 +99,7 @@ func notesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func notesHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) {
-	notes, err := db.AllNotes(userID)
+	notes, err := db.AllTodos(userID)
 	if err != nil {
 		slog.With("err", err).Error("While getting notes from DB")
 		http.Error(w, "Could not get notes", http.StatusInternalServerError)
@@ -125,7 +125,7 @@ func notesHandlerGET(w http.ResponseWriter, r *http.Request, userID int64) {
 
 func notesHandlerPOST(w http.ResponseWriter, r *http.Request, userID int64) {
 	decoder := json.NewDecoder(r.Body)
-	var note doit.Note
+	var note doit.Todo
 	err := decoder.Decode(&note)
 	if err != nil {
 		slog.With("err", err).Error("Decoding request body")
@@ -142,17 +142,17 @@ func notesHandlerPOST(w http.ResponseWriter, r *http.Request, userID int64) {
 
 	slog.With("note", note).Debug("Adding note to db")
 	note.UserID = userID
-	noteCreated, err := db.CreateNote(note)
+	noteCreated, err := db.CreateTodo(note)
 	if err != nil {
 		slog.With("note", note, "err", err).Error("Adding note to db")
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 
-	jnote, err := json.Marshal(doit.NoteToResponse(noteCreated))
+	jnote, err := json.Marshal(doit.TodoToResponse(noteCreated))
 	if err != nil {
 		slog.With("note", note, "err", err).Error("Could not parse note to json")
-		http.Error(w, "Note was added but we could not send the note back", http.StatusInternalServerError)
+		http.Error(w, "Todo was added but we could not send the note back", http.StatusInternalServerError)
 		return
 	}
 
@@ -162,7 +162,7 @@ func notesHandlerPOST(w http.ResponseWriter, r *http.Request, userID int64) {
 	return
 }
 
-func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
+func singleTodoHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.Header().Set("Allow", "GET OPTIONS PUT DELETE")
 		w.WriteHeader(http.StatusOK)
@@ -172,7 +172,7 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	id_string, ok := mux.Vars(r)["id"]
 	if !ok {
-		slog.With("vars", mux.Vars(r)).Error("Could not get id from router vars in singleNoteHandler")
+		slog.With("vars", mux.Vars(r)).Error("Could not get id from router vars in singleTodoHandler")
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -199,11 +199,11 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		singleNoteHandlerGET(w, r, id, s.userID)
+		singleTodoHandlerGET(w, r, id, s.userID)
 	case http.MethodDelete:
-		singleNoteHandlerDELETE(w, r, id, s.userID)
+		singleTodoHandlerDELETE(w, r, id, s.userID)
 	case http.MethodPut:
-		singleNoteHandlerPUT(w, r, id, s.userID)
+		singleTodoHandlerPUT(w, r, id, s.userID)
 	default:
 		slog.With("method", r.Method).Error("Method not valid. How did we get here?")
 		http.Error(w, "Bad method", http.StatusMethodNotAllowed)
@@ -211,8 +211,8 @@ func singleNoteHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func singleNoteHandlerGET(w http.ResponseWriter, r *http.Request, noteID int64, userId int64) {
-	note, err := db.GetNoteByID(noteID)
+func singleTodoHandlerGET(w http.ResponseWriter, r *http.Request, noteID int64, userId int64) {
+	note, err := db.GetTodoByID(noteID)
 	if err != nil {
 		slog.With("err", err, "id", noteID).Error("Getting notes")
 		if errors.Is(err, db.ErrNotExists) {
@@ -242,7 +242,7 @@ func singleNoteHandlerGET(w http.ResponseWriter, r *http.Request, noteID int64, 
 	w.Write(jnote)
 }
 
-func singleNoteHandlerPUT(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {
+func singleTodoHandlerPUT(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		slog.With("err", err).Error("Reading body")
@@ -250,7 +250,7 @@ func singleNoteHandlerPUT(w http.ResponseWriter, r *http.Request, noteID int64, 
 		return
 	}
 
-	var note doit.Note
+	var note doit.Todo
 	err = json.Unmarshal(body, &note)
 	if err != nil {
 		http.Error(w, "Could not unmarshal body", http.StatusBadRequest)
@@ -259,25 +259,25 @@ func singleNoteHandlerPUT(w http.ResponseWriter, r *http.Request, noteID int64, 
 
 	note.UserID = userID
 
-	newNote, err := db.UpdateNote(noteID, note, userID)
+	newTodo, err := db.UpdateTodo(noteID, note, userID)
 	if err != nil {
 		slog.With("err", err).Error("Updating note")
 		http.Error(w, "Could not update note", http.StatusBadRequest)
 		return
 	}
 
-	b, err := json.Marshal(*newNote)
+	b, err := json.Marshal(*newTodo)
 	if err != nil {
 		slog.With("err", err).Error("Marshaling note update")
-		w.Write([]byte("Note updated, but can't be returned"))
+		w.Write([]byte("Todo updated, but can't be returned"))
 		return
 	}
 
 	w.Write(b)
 }
 
-func singleNoteHandlerDELETE(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {
-	err := db.DeleteNoteByID(noteID, userID)
+func singleTodoHandlerDELETE(w http.ResponseWriter, r *http.Request, noteID int64, userID int64) {
+	err := db.DeleteTodoByID(noteID, userID)
 	if err != nil {
 		if errors.Is(err, db.ErrDeleteFailed) {
 			w.WriteHeader(http.StatusNotFound)
@@ -567,7 +567,7 @@ func singleUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	id_string, ok := mux.Vars(r)["id"]
 	if !ok {
-		slog.With("vars", mux.Vars(r)).Error("Could not get id from router vars in singleNoteHandler")
+		slog.With("vars", mux.Vars(r)).Error("Could not get id from router vars in singleTodoHandler")
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -730,7 +730,7 @@ func singleUserHandlerPUT(w http.ResponseWriter, r *http.Request, userID int64, 
 }
 
 func singleUserHandlerDELETE(w http.ResponseWriter, r *http.Request, userID int64, author *doit.User) {
-	err := db.DeleteNotesByUserID(userID)
+	err := db.DeleteTodosByUserID(userID)
 	if err != nil && !errors.Is(err, db.ErrDeleteFailed) {
 		http.Error(w, "", http.StatusInternalServerError)
 		return

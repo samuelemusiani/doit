@@ -40,8 +40,8 @@ func newPassword() (string, error) {
 	return string(h), e
 }
 
-func newNote() doit.Note {
-	return doit.Note{
+func newTodo() doit.Todo {
+	return doit.Todo{
 		Title:       randString(10),
 		Description: randString(250),
 		StateID:     1,
@@ -76,10 +76,10 @@ func createAndInsertUser() (*doit.User, error) {
 	return CreateUser(user)
 }
 
-func createAndInsertNote(userID int64) (*doit.Note, error) {
-	note := newNote()
-	note.UserID = userID
-	return CreateNote(note)
+func createAndInsertTodo(userID int64) (*doit.Todo, error) {
+	todo := newTodo()
+	todo.UserID = userID
+	return CreateTodo(todo)
 }
 
 // Acctual testing
@@ -236,29 +236,29 @@ func TestUpdateUser(t *testing.T) {
 	assert.NilError(t, err)
 }
 
-func TestCreateNoteWithoutUser(t *testing.T) {
+func TestCreateTodoWithoutUser(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
-	note := newNote()
+	todo := newTodo()
 
-	_, err = CreateNote(note)
+	_, err = CreateTodo(todo)
 	assert.ErrorContains(t, err, "FOREIGN KEY constraint failed")
 
 	err = cleanup()
 	assert.NilError(t, err)
 }
 
-func TestCreateNote(t *testing.T) {
+func TestCreateTodo(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
 	u, err := createAndInsertUser()
 	assert.NilError(t, err)
 
-	n := newNote()
+	n := newTodo()
 	n.UserID = u.ID
-	nn, err := CreateNote(n)
+	nn, err := CreateTodo(n)
 	assert.NilError(t, err)
 
 	n.ID = nn.ID
@@ -268,7 +268,7 @@ func TestCreateNote(t *testing.T) {
 	assert.NilError(t, err)
 }
 
-func TestAllNotes(t *testing.T) {
+func TestAllTodos(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
@@ -281,97 +281,97 @@ func TestAllNotes(t *testing.T) {
 		users[i] = *user
 	}
 
-	numberOfNotes := rand.Intn(10) + 10
-	notes := make([]doit.Note, numberOfNotes)
-	for i := range numberOfNotes {
-		note, err := createAndInsertNote(int64(rand.Intn(numberOfUsers) + 1))
+	numberOfTodos := rand.Intn(10) + 10
+	todos := make([]doit.Todo, numberOfTodos)
+	for i := range numberOfTodos {
+		todo, err := createAndInsertTodo(int64(rand.Intn(numberOfUsers) + 1))
 		assert.NilError(t, err)
 
-		notes[i] = *note
+		todos[i] = *todo
 	}
 
-	notesFromUserID := func(notes []doit.Note, userID int64) []doit.Note {
-		var newNotes []doit.Note
-		for i := range notes {
-			if notes[i].UserID == userID {
-				newNotes = append(newNotes, notes[i])
+	todosFromUserID := func(todos []doit.Todo, userID int64) []doit.Todo {
+		var newTodos []doit.Todo
+		for i := range todos {
+			if todos[i].UserID == userID {
+				newTodos = append(newTodos, todos[i])
 			}
 		}
-		return newNotes
+		return newTodos
 	}
 
-	sortFunc := func(a, b doit.Note) int { return int(a.ID - b.ID) }
+	sortFunc := func(a, b doit.Todo) int { return int(a.ID - b.ID) }
 
 	for userID := int64(1); userID <= int64(numberOfUsers); userID++ {
-		dbNotes, err := AllNotes(userID)
+		dbTodos, err := AllTodos(userID)
 		assert.NilError(t, err)
 
-		notesFiltered := notesFromUserID(notes, userID)
-		slices.SortFunc(notesFiltered, sortFunc)
-		assert.DeepEqual(t, notesFiltered, dbNotes)
+		todosFiltered := todosFromUserID(todos, userID)
+		slices.SortFunc(todosFiltered, sortFunc)
+		assert.DeepEqual(t, todosFiltered, dbTodos)
 	}
 
 	err = cleanup()
 	assert.NilError(t, err)
 }
 
-func TestGetNoteById(t *testing.T) {
+func TestGetTodoById(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
 	user, err := createAndInsertUser()
 	assert.NilError(t, err)
 
-	note, err := createAndInsertNote(user.ID)
+	todo, err := createAndInsertTodo(user.ID)
 	assert.NilError(t, err)
 
-	getNote, err := GetNoteByID(note.ID)
+	getTodo, err := GetTodoByID(todo.ID)
 	assert.NilError(t, err)
 
-	assert.DeepEqual(t, note, getNote)
+	assert.DeepEqual(t, todo, getTodo)
 
 	err = cleanup()
 	assert.NilError(t, err)
 }
 
-func TestUpdateNoteByID(t *testing.T) {
+func TestUpdateTodoByID(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
 	user, err := createAndInsertUser()
 	assert.NilError(t, err)
 
-	note, err := createAndInsertNote(user.ID)
+	todo, err := createAndInsertTodo(user.ID)
 	assert.NilError(t, err)
 
-	newNote := newNote()
-	newNote.ID = note.ID
-	newNote.UserID = note.UserID
+	newTodo := newTodo()
+	newTodo.ID = todo.ID
+	newTodo.UserID = todo.UserID
 
-	modNote, err := UpdateNote(note.ID, newNote, note.UserID)
+	modTodo, err := UpdateTodo(todo.ID, newTodo, todo.UserID)
 	assert.NilError(t, err)
-	assert.Equal(t, *modNote, newNote)
+	assert.Equal(t, *modTodo, newTodo)
 }
 
-func TestDeleteNoteByID(t *testing.T) {
+func TestDeleteTodoByID(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
 	user, err := createAndInsertUser()
 	assert.NilError(t, err)
 
-	note, err := createAndInsertNote(user.ID)
+	todo, err := createAndInsertTodo(user.ID)
 	assert.NilError(t, err)
 
-	err = DeleteNoteByID(note.ID, user.ID)
+	err = DeleteTodoByID(todo.ID, user.ID)
 	assert.NilError(t, err)
 
-	notes, err := AllNotes(user.ID)
+	todos, err := AllTodos(user.ID)
 	assert.NilError(t, err)
 
-	for i := range notes {
-		if notes[i].ID == note.ID {
-			t.Fatalf("Note present in db after deletion")
+	for i := range todos {
+		if todos[i].ID == todo.ID {
+			t.Fatalf("Todo present in db after deletion")
 		}
 	}
 
@@ -379,24 +379,24 @@ func TestDeleteNoteByID(t *testing.T) {
 	assert.NilError(t, err)
 }
 
-func TestDeleteNoteByIDWrongUserID(t *testing.T) {
+func TestDeleteTodoByIDWrongUserID(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
 	user, err := createAndInsertUser()
 	assert.NilError(t, err)
 
-	note, err := createAndInsertNote(user.ID)
+	todo, err := createAndInsertTodo(user.ID)
 	assert.NilError(t, err)
 
-	err = DeleteNoteByID(note.ID, 123982)
+	err = DeleteTodoByID(todo.ID, 123982)
 	assert.ErrorIs(t, err, ErrDeleteFailed)
 
 	err = cleanup()
 	assert.NilError(t, err)
 }
 
-func TestDeleteNotesByUserID(t *testing.T) {
+func TestDeleteTodosByUserID(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
@@ -409,28 +409,28 @@ func TestDeleteNotesByUserID(t *testing.T) {
 		users[i] = *user
 	}
 
-	numberOfNotes := rand.Intn(10) + 10
-	notes := make([]doit.Note, numberOfNotes)
-	for i := range numberOfNotes {
-		note, err := createAndInsertNote(int64(rand.Intn(numberOfUsers) + 1))
+	numberOfTodos := rand.Intn(10) + 10
+	todos := make([]doit.Todo, numberOfTodos)
+	for i := range numberOfTodos {
+		todo, err := createAndInsertTodo(int64(rand.Intn(numberOfUsers) + 1))
 		assert.NilError(t, err)
 
-		notes[i] = *note
+		todos[i] = *todo
 	}
 
 	userID := int64(rand.Intn(numberOfUsers) + 1)
-	err = DeleteNotesByUserID(userID)
+	err = DeleteTodosByUserID(userID)
 	assert.NilError(t, err)
 
-	dbNotes, err := AllNotes(userID)
+	dbTodos, err := AllTodos(userID)
 	assert.NilError(t, err)
-	assert.Check(t, len(dbNotes) == 0)
+	assert.Check(t, len(dbTodos) == 0)
 
 	err = cleanup()
 	assert.NilError(t, err)
 }
 
-func TestInsertNoteStates(t *testing.T) {
+func TestInsertTodoStates(t *testing.T) {
 	err := setup()
 	assert.NilError(t, err)
 
