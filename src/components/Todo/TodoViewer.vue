@@ -75,7 +75,8 @@ onBeforeUnmount(() => {
 <template>
   <div class="grid bg-gray-200 bg-opacity-30" @click="close()">
     <div
-      class="fixed place-self-center rounded-lg bg-white shadow-2xl md:w-[35rem] md:min-w-[25rem] lg:w-[50rem]"
+      class="fixed h-full place-self-center overflow-auto rounded-lg bg-white shadow-2xl md:w-[35rem] md:min-w-[25rem] lg:w-[50rem]"
+      :class="{ 'max-h-[30rem]': !_modifying, 'max-h-[44rem]': _modifying }"
       @click.stop=""
     >
       <header class="flex justify-end border-b border-b-gray-400 p-1">

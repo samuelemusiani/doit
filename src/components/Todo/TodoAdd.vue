@@ -72,7 +72,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="grid bg-gray-200 bg-opacity-30" @click="close()">
     <div
-      class="fixed place-self-center rounded-lg bg-white shadow-2xl md:min-w-[25rem]"
+      class="fixed h-full max-h-[44rem] place-self-center overflow-auto rounded-lg bg-white shadow-2xl md:min-w-[25rem]"
       @click.stop=""
     >
       <header class="rounded-t-lg bg-gray-300">

@@ -59,21 +59,25 @@ function closeModal(accept: boolean = false) {
 <template>
   <div v-if="_show" class="bg-gray-200 bg-opacity-30">
     <div class="flex h-full items-center justify-center">
-      <div class="rounded border bg-white p-5 shadow-xl">
-        <header class="text-xl font-bold">
-          {{ $props.title }}
-        </header>
+      <div
+        class="flex h-full max-h-[40rem] flex-col justify-between overflow-auto rounded border bg-white p-5 shadow-xl"
+      >
+        <div>
+          <header class="text-xl font-bold">
+            {{ $props.title }}
+          </header>
 
-        <main class="my-5">
-          <component
-            v-if="$props.component"
-            :is="$props.component"
-            v-model:data="_data"
-            v-model:ok="_can_submit"
-            :tried_submitted="_tried_submitted"
-          />
-          <slot> </slot>
-        </main>
+          <main class="my-5">
+            <component
+              v-if="$props.component"
+              :is="$props.component"
+              v-model:data="_data"
+              v-model:ok="_can_submit"
+              :tried_submitted="_tried_submitted"
+            />
+            <slot> </slot>
+          </main>
+        </div>
 
         <footer class="flex justify-evenly">
           <button @click="closeModal(false)" class="rounded border bg-red-300 p-2 hover:bg-red-500">
