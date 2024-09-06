@@ -73,40 +73,42 @@ function closeModify() {
       @delete="deleteTodo"
       class="absolute right-0 top-0 h-full w-full"
     />
-    <template v-for="note in $props.notes.sort(sortTodos)" :key="note.ID">
-      <div
-        class="my-2 flex flex-col gap-5 rounded border border-black p-5 first:mt-0 last:mb-0 hover:bg-gray-100 md:max-h-28 md:flex-row md:justify-between"
-        @click="callModify(note)"
-      >
-        <div class="flex overflow-hidden">
-          <div class="mr-5 grid items-center">
-            <button
-              class="w-24 rounded p-2 hover:saturate-150"
-              @click.stop.exact="advanceStateTodo(note, false)"
-              @click.stop.shift="advanceStateTodo(note, true)"
-              :style="{ 'background-color': _todo_options.Colors[note.ColorID - 1].Hex }"
-            >
-              {{ _todo_options.States[note.StateID - 1].State }}
-            </button>
+    <div>
+      <template v-for="note in $props.notes.sort(sortTodos)" :key="note.ID">
+        <div
+          class="my-2 flex flex-col gap-5 rounded border border-black p-5 first:mt-0 last:mb-0 hover:bg-gray-100 md:max-h-28 md:flex-row md:justify-between"
+          @click="callModify(note)"
+        >
+          <div class="flex overflow-hidden">
+            <div class="mr-5 grid items-center">
+              <button
+                class="w-24 rounded p-2 hover:saturate-150"
+                @click.stop.exact="advanceStateTodo(note, false)"
+                @click.stop.shift="advanceStateTodo(note, true)"
+                :style="{ 'background-color': _todo_options.Colors[note.ColorID - 1].Hex }"
+              >
+                {{ _todo_options.States[note.StateID - 1].State }}
+              </button>
+            </div>
+            <div class="overflow-auto">
+              <h3 class="truncate font-semibold">{{ note.Title }}</h3>
+              <p class="truncate">
+                {{ note.Description }}
+              </p>
+            </div>
           </div>
-          <div class="overflow-auto">
-            <h3 class="truncate font-semibold">{{ note.Title }}</h3>
-            <p class="truncate">
-              {{ note.Description }}
-            </p>
+          <div class="flex justify-between md:mt-0 md:flex-col">
+            <div class="min-w-20 md:text-right">
+              {{ _todo_options.Priorities[note.PriorityID - 1].Priority }}
+            </div>
+            <div v-if="note.Expiration.DoesExpire" class="min-w-40 text-right">
+              {{ new Date(note.Expiration.Date).toDateString() }}
+              {{ new Date(note.Expiration.Date).toLocaleTimeString() }}
+            </div>
           </div>
         </div>
-        <div class="flex justify-between md:mt-0 md:flex-col">
-          <div class="min-w-20 md:text-right">
-            {{ _todo_options.Priorities[note.PriorityID - 1].Priority }}
-          </div>
-          <div v-if="note.Expiration.DoesExpire" class="min-w-40 text-right">
-            {{ new Date(note.Expiration.Date).toDateString() }}
-            {{ new Date(note.Expiration.Date).toLocaleTimeString() }}
-          </div>
-        </div>
-      </div>
-    </template>
+      </template>
+    </div>
     <div v-if="notes.length == 0" class="text-gray-800">
       Looks like theres is nothing to do... :)
     </div>
