@@ -79,113 +79,127 @@ onBeforeUnmount(() => {
       :class="{ 'max-h-[30rem]': !_modifying, 'max-h-[44rem]': _modifying }"
       @click.stop=""
     >
-      <header class="flex justify-end border-b border-b-gray-400 p-1">
-        <button
-          class="h-7 w-7 rounded p-1 hover:bg-gray-200"
-          @click="deleteTodo()"
-          v-show="!_modifying"
-        >
-          <span class="icon-[mdi--bin] h-5 w-5 text-red-500"></span>
-        </button>
-
-        <button
-          class="h-7 w-7 rounded p-1 hover:bg-gray-200"
-          @click="startModify()"
-          v-show="!_modifying"
-        >
-          <span class="icon-[mdi--pencil] h-5 w-5 text-black"></span>
-        </button>
-
-        <button class="h-7 w-7 rounded p-1 hover:bg-gray-200" @click="close()">
-          <span class="icon-[material-symbols--close] h-5 w-5 text-black"></span>
-        </button>
-      </header>
-
-      <body>
-        <form class="flex flex-col justify-between gap-5 p-5 lg:flex-row">
-          <div>
-            <div class="mb-5 pb-2">
-              <h1 class="text-xl font-bold" v-if="!_modifying">
-                {{ $props.todo.Title }}
-              </h1>
-              <input
-                v-else
-                class="rounded border p-1 text-xl font-bold"
-                v-model="$props.todo.Title"
-              />
-            </div>
-
-            <p v-if="!_modifying">{{ $props.todo.Description }}</p>
-            <textarea
-              v-else
-              class="h-52 rounded border p-1 lg:min-w-96"
-              v-model="$props.todo.Description"
+      <div class="flex h-full flex-col justify-between">
+        <div>
+          <header class="flex justify-end border-b border-b-gray-400 p-1">
+            <button
+              class="h-7 w-7 rounded p-1 hover:bg-gray-200"
+              @click="deleteTodo()"
+              v-show="!_modifying"
             >
-            </textarea>
-          </div>
+              <span class="icon-[mdi--bin] h-5 w-5 text-red-500"></span>
+            </button>
 
-          <div class="flex min-w-40 flex-col gap-4">
-            <div>
-              <label>State:</label>
-              <div class="font-bold" v-if="!_modifying">
-                {{ _todo_options.States[$props.todo.StateID - 1].State }}
-              </div>
-              <div class="w-full" v-else>
-                <select
-                  v-model="$props.todo.StateID"
-                  class="w-full rounded border border-black bg-white p-2 font-bold"
+            <button
+              class="h-7 w-7 rounded p-1 hover:bg-gray-200"
+              @click="startModify()"
+              v-show="!_modifying"
+            >
+              <span class="icon-[mdi--pencil] h-5 w-5 text-black"></span>
+            </button>
+
+            <button class="h-7 w-7 rounded p-1 hover:bg-gray-200" @click="close()">
+              <span class="icon-[material-symbols--close] h-5 w-5 text-black"></span>
+            </button>
+          </header>
+
+          <body>
+            <form class="flex flex-col justify-between gap-5 p-5 lg:flex-row">
+              <div>
+                <div class="mb-5 pb-2">
+                  <h1 class="text-xl font-bold" v-if="!_modifying">
+                    {{ $props.todo.Title }}
+                  </h1>
+                  <input
+                    v-else
+                    class="rounded border p-1 text-xl font-bold"
+                    v-model="$props.todo.Title"
+                  />
+                </div>
+
+                <p v-if="!_modifying">{{ $props.todo.Description }}</p>
+                <textarea
+                  v-else
+                  class="h-52 rounded border p-1 lg:min-w-96"
+                  v-model="$props.todo.Description"
                 >
-                  <option v-for="state in _todo_options.States" :key="state.ID" :value="state.ID">
-                    {{ state.State }}
-                  </option>
-                </select>
+                </textarea>
               </div>
-            </div>
-            <div>
-              <label class="">Priority:</label>
-              <div class="font-bold" v-if="!_modifying">
-                {{ _todo_options.Priorities[$props.todo.PriorityID - 1].Priority }}
+
+              <div class="flex min-w-40 flex-col gap-4">
+                <div>
+                  <label>State:</label>
+                  <div class="font-bold" v-if="!_modifying">
+                    {{ _todo_options.States[$props.todo.StateID - 1].State }}
+                  </div>
+                  <div class="w-full" v-else>
+                    <select
+                      v-model="$props.todo.StateID"
+                      class="w-full rounded border border-black bg-white p-2 font-bold"
+                    >
+                      <option
+                        v-for="state in _todo_options.States"
+                        :key="state.ID"
+                        :value="state.ID"
+                      >
+                        {{ state.State }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label class="">Priority:</label>
+                  <div class="font-bold" v-if="!_modifying">
+                    {{ _todo_options.Priorities[$props.todo.PriorityID - 1].Priority }}
+                  </div>
+                  <div class="w-full" v-else>
+                    <select
+                      v-model="$props.todo.PriorityID"
+                      class="w-full rounded border border-black bg-white p-2 font-bold"
+                    >
+                      <option
+                        v-for="priority in _todo_options.Priorities"
+                        :key="priority.ID"
+                        :value="priority.ID"
+                      >
+                        {{ priority.Priority }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label>Color:</label>
+                  <div
+                    :style="{
+                      'background-color': _todo_options.Colors[$props.todo.ColorID - 1].Hex
+                    }"
+                    class="h-8 rounded"
+                    v-if="!_modifying"
+                  ></div>
+                  <ColorPicker
+                    :colors="_todo_options.Colors"
+                    v-model="$props.todo.ColorID"
+                    v-else
+                  />
+                </div>
               </div>
-              <div class="w-full" v-else>
-                <select
-                  v-model="$props.todo.PriorityID"
-                  class="w-full rounded border border-black bg-white p-2 font-bold"
-                >
-                  <option
-                    v-for="priority in _todo_options.Priorities"
-                    :key="priority.ID"
-                    :value="priority.ID"
-                  >
-                    {{ priority.Priority }}
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label>Color:</label>
-              <div
-                :style="{ 'background-color': _todo_options.Colors[$props.todo.ColorID - 1].Hex }"
-                class="h-8 rounded"
-                v-if="!_modifying"
-              ></div>
-              <ColorPicker :colors="_todo_options.Colors" v-model="$props.todo.ColorID" v-else />
-            </div>
-          </div>
-        </form>
-      </body>
-
-      <footer v-show="_modifying" class="p-2">
-        <div class="flex justify-evenly">
-          <button class="rounded border bg-red-300 p-2 hover:bg-red-500" @click="cancelModify()">
-            Cancel
-          </button>
-
-          <button class="rounded border bg-blue-300 p-2 hover:bg-blue-500" @click="modify()">
-            Modify
-          </button>
+            </form>
+          </body>
         </div>
-      </footer>
+
+        <footer v-show="_modifying" class="p-2">
+          <div class="flex justify-evenly">
+            <button class="rounded border bg-red-300 p-2 hover:bg-red-500" @click="cancelModify()">
+              Cancel
+            </button>
+
+            <button class="rounded border bg-blue-300 p-2 hover:bg-blue-500" @click="modify()">
+              Modify
+            </button>
+          </div>
+        </footer>
+      </div>
 
       <Transition>
         <Modal
