@@ -65,10 +65,6 @@ function closeModify() {
 
 <template>
   <div>
-    <!--
-    <TodoAdd :todo="_todo_to_modify" :modify="true" v-if="_modify_todo" @close="closeModify" @addModifyTodo="modifyTodo"
-      @deleteTodo="deleteTodo" ref="__modify_ref" />
--->
     <TodoViewer
       :todo="_todo_to_modify"
       v-if="_modify_todo && _todo_to_modify"
@@ -79,7 +75,7 @@ function closeModify() {
     />
     <template v-for="note in $props.notes.sort(sortTodos)" :key="note.ID">
       <div
-        class="my-2 flex flex-col gap-5 rounded border border-black p-5 hover:bg-gray-100 md:max-h-28 md:flex-row md:justify-between"
+        class="my-2 flex flex-col gap-5 rounded border border-black p-5 first:mt-0 last:mb-0 hover:bg-gray-100 md:max-h-28 md:flex-row md:justify-between"
         @click="callModify(note)"
       >
         <div class="flex overflow-hidden">
