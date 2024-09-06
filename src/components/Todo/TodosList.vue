@@ -64,7 +64,7 @@ function closeModify() {
 </script>
 
 <template>
-  <div>
+  <div class="mt-4 md:mt-0">
     <TodoViewer
       :todo="_todo_to_modify"
       v-if="_modify_todo && _todo_to_modify"
