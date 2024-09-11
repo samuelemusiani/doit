@@ -6,7 +6,7 @@ import type { Options, Todo } from '@/types'
 import { onMounted, ref, computed, inject } from 'vue'
 import { addTodo, deleteTodo, fetchTodos, updateTodo } from '@/lib/api'
 
-const _notes = ref<Todo[]>([])
+const _todos = ref<Todo[]>([])
 const __addTodo = ref<boolean>(false)
 
 function newTodo() {
@@ -16,7 +16,7 @@ function newTodo() {
 function _updateTodo(todo: Todo) {
   updateTodo(todo)
     .then(() => {
-      fetchTodos().then((notes) => (_notes.value = notes))
+      fetchTodos().then((notes) => (_todos.value = notes))
     })
     .catch((error) => {
       console.error(error)
@@ -26,7 +26,7 @@ function _updateTodo(todo: Todo) {
 function _deleteTodo(id: number) {
   deleteTodo(id)
     .then(() => {
-      fetchTodos().then((notes) => (_notes.value = notes))
+      fetchTodos().then((notes) => (_todos.value = notes))
     })
     .catch((error) => {
       console.error(error)
@@ -36,7 +36,7 @@ function _deleteTodo(id: number) {
 function _addTodo(todo: Todo) {
   addTodo(todo)
     .then(() => {
-      fetchTodos().then((notes) => (_notes.value = notes))
+      fetchTodos().then((notes) => (_todos.value = notes))
     })
     .catch((error) => {
       console.error(error)
@@ -51,7 +51,7 @@ const _filter_search = ref<string>('')
 const _todos_options = inject('todoOptions') as Options
 
 const _actual_todos = computed(() => {
-  return _notes.value.filter((e) => {
+  return _todos.value.filter((e) => {
     let c1: boolean
     let c2: boolean
 
@@ -77,7 +77,7 @@ function filterTodos(s: number) {
 }
 
 onMounted(() => {
-  fetchTodos().then((notes) => (_notes.value = notes))
+  fetchTodos().then((notes) => (_todos.value = notes))
 })
 
 // Responsive
@@ -88,13 +88,13 @@ const __show_mobile = ref<boolean>(false)
   <div class="p-2">
     <div class="flex flex-col-reverse md:flex-row md:justify-center">
       <TodosList
-        :notes="_actual_todos"
+        :todos="_actual_todos"
         @updateTodo="_updateTodo"
         @deleteTodo="_deleteTodo"
         class="md:min-w-[40rem] md:max-w-[60rem]"
       />
       <div class="flex gap-5 md:ml-5 md:flex-col">
-        <TodoStats class="hidden md:block" :todos="_notes" @selected="filterTodos" />
+        <TodoStats class="hidden md:block" :todos="_todos" @selected="filterTodos" />
         <button
           class="rounded bg-orange-200 p-2 shadow md:hidden"
           @click="__show_mobile = !__show_mobile"
@@ -104,7 +104,7 @@ const __show_mobile = ref<boolean>(false)
         <TodoStats
           :class="{ hidden: !__show_mobile }"
           class="w-full md:hidden"
-          :todos="_notes"
+          :todos="_todos"
           @selected="filterTodos"
         />
 
