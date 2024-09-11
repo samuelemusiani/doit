@@ -4,6 +4,7 @@ import type { PropType } from 'vue'
 import { inject, ref, onMounted, onBeforeUnmount } from 'vue'
 
 import ColorPicker from '@/components/ColorPicker.vue'
+import VueMarkdown from 'vue-markdown-render'
 
 const $props = defineProps({
   todo: {
@@ -103,7 +104,7 @@ onBeforeUnmount(() => {
             </button>
           </header>
 
-          <body>
+          <main>
             <form class="flex flex-col justify-between gap-5 p-5 lg:flex-row">
               <div>
                 <div class="mb-5 pb-2">
@@ -117,13 +118,15 @@ onBeforeUnmount(() => {
                   />
                 </div>
 
-                <p v-if="!_modifying">{{ $props.todo.Description }}</p>
-                <textarea
-                  v-else
-                  class="h-52 rounded border p-1 lg:min-w-96"
-                  v-model="$props.todo.Description"
-                >
-                </textarea>
+                <div class="prose">
+                  <vue-markdown v-if="!_modifying" :source="$props.todo.Description" />
+                  <textarea
+                    v-else
+                    class="h-52 rounded border p-1 lg:min-w-96"
+                    v-model="$props.todo.Description"
+                  >
+                  </textarea>
+                </div>
               </div>
 
               <div class="flex min-w-40 flex-col gap-4">
@@ -185,7 +188,7 @@ onBeforeUnmount(() => {
                 </div>
               </div>
             </form>
-          </body>
+          </main>
         </div>
 
         <footer v-show="_modifying" class="p-2">

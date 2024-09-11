@@ -10,6 +10,7 @@ export default {
     extend: {},
   },
   plugins: [
-    addDynamicIconSelectors()
+    addDynamicIconSelectors(),
+    require('@tailwindcss/typography'),
   ],
 }
