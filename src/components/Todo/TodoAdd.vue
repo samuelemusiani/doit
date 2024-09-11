@@ -54,19 +54,6 @@ function addTodo() {
 function close() {
   $emits('close')
 }
-
-function keyboardListener(event: KeyboardEvent) {
-  if (event.key == 'Escape') {
-    close()
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('keyup', keyboardListener)
-})
-onBeforeUnmount(() => {
-  window.removeEventListener('keyup', keyboardListener)
-})
 </script>
 
 <template>
@@ -79,7 +66,7 @@ onBeforeUnmount(() => {
         <h1 class="p-4 text-center text-xl font-bold">Add note</h1>
       </header>
 
-      <body class="">
+      <main class="">
         <form class="flex flex-col p-5" @submit.prevent="">
           <label>Title</label>
           <input
@@ -167,7 +154,7 @@ onBeforeUnmount(() => {
             </button>
           </div>
         </form>
-      </body>
+      </main>
     </div>
   </div>
 </template>

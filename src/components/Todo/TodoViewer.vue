@@ -61,7 +61,7 @@ function modify() {
 }
 
 function keyboardListener(event: KeyboardEvent) {
-  if (event.key == 'Escape') {
+  if (event.key == 'Escape' && !_modifying.value) {
     close()
   }
 }
