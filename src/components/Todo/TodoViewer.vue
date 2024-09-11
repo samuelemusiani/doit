@@ -57,6 +57,7 @@ function cancelModify() {
 
 function modify() {
   $emits('modify', $props.todo)
+  _modifying.value = false
 }
 
 function keyboardListener(event: KeyboardEvent) {

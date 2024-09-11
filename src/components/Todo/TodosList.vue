@@ -51,6 +51,8 @@ function callModify(todo: Todo) {
 function modifyTodo(todo: Todo) {
   $emits('updateTodo', todo)
   _modify_todo.value = false
+
+  callModify(todo)
 }
 
 function deleteTodo(todo: Todo) {
